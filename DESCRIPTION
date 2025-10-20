@@ -1,0 +1,21 @@
+Package: GameOnTicker
+Title: Live game clocks and scores for Game On! Football
+Version: 0.0.0.9000
+Authors@R: 
+    person("Nash", "Delcamp", , "nash.delcamp@gmail.com", role = c("aut", "cre"))
+Description: Roles for administrators, referees, and viewers. Referees manage the game while tracking scoring events. Players and fans keep tabs on games in real time.
+License: MIT + file LICENSE
+Imports: 
+    config,
+    golem,
+    shiny
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.3.2
+URL: https://github.com/pmacled/GameOnTicker
+BugReports: https://github.com/pmacled/GameOnTicker/issues
+Suggests: 
+    spelling,
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+Language: en-US
