@@ -102,7 +102,11 @@ mod_play_by_play_view_server <- function(id, db_conn, game_id) {
       # Event description
       events$desc <- event_type_label(events$event_type)
       events$clock_str <- format_clock(events$clock)
-      events <- dplyr::filter(events, !is.na(desc))
+      events <- events[!is.na(events$desc), ]
+      if (nrow(events) == 0) {
+        return(NULL)
+      }
+      events
     })
 
     # Render play-by-play table
