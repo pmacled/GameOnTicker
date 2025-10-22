@@ -1,4 +1,7 @@
-gameon_db_connect <- function(db_path = "gameon.duckdb") {
+# TODO move to db on digital ocean. local duckdb for now.
+gameon_db_connect <- function(
+  db_path = system.file("app/data/gameon.duckdb", package = "GameOnTicker")
+) {
   DBI::dbConnect(duckdb::duckdb(), dbdir = db_path)
 }
 
