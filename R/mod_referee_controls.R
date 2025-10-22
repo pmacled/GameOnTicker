@@ -122,7 +122,7 @@ mod_referee_controls_server <- function(id, db_conn, game_id) {
 
     observe({
       if (is.character(call_event_rv())) {
-        if (exists(call_event_rv())) {
+        if (exists(call_event_rv()) && !call_event_rv() %in% c("start_clock")) {
           event_fn <- get(call_event_rv())
           if (is.function(event_fn)) {
             do.call(event_fn, args = list(record = FALSE))
