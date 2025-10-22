@@ -9,8 +9,15 @@ app_ui <- function(request) {
     # Leave this function for adding external resources
     golem_add_external_resources(),
     # Your application UI logic
-    fluidPage(
-      golem::golem_welcome_page() # Remove this line to start building your UI
+    navbarPage(
+      "Game On! Ticker (alpha)",
+      tabPanel(
+        "Referee Controls",
+        mod_referee_controls_ui("referee_controls_1")
+      ),
+      tabPanel("Play-by-Play", mod_play_by_play_view_ui("play_by_play_view_1")),
+      tabPanel("Data Controls", mod_data_controls_ui("data_controls_1"))
+      # TODO next module should probably be the game viewer/ticker.
     )
   )
 }
