@@ -11,6 +11,7 @@ Imports:
     dplyr,
     duckdb,
     golem,
+    pkgload,
     rhandsontable,
     shiny
 Encoding: UTF-8
