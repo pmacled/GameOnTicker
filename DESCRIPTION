@@ -9,10 +9,10 @@ Imports:
     config,
     DBI,
     dplyr,
-    duckdb,
     golem,
     pkgload,
     rhandsontable,
+    RPostgres,
     shiny
 Encoding: UTF-8
 LazyData: true

@@ -1,8 +1,19 @@
-# TODO move to db on digital ocean. local duckdb for now.
 gameon_db_connect <- function(
-  db_path = system.file("app/data/gameon.duckdb", package = "GameOnTicker")
+  drv = RPostgres::Postgres(),
+  host = Sys.getenv("POSTGRES_HOST"),
+  port = Sys.getenv("POSTGRES_PORT"),
+  dbname = Sys.getenv("POSTGRES_DBNAME"),
+  user = Sys.getenv("POSTGRES_USER"),
+  password = Sys.getenv("POSTGRES_PASSWORD")
 ) {
-  DBI::dbConnect(duckdb::duckdb(), dbdir = db_path)
+  DBI::dbConnect(
+    drv = drv,
+    host = host,
+    port = port,
+    dbname = dbname,
+    user = user,
+    password = password
+  )
 }
 
 gameon_db_init <- function(db_conn) {
@@ -85,24 +96,24 @@ make_example_data <- function() {
   # add some teams
   DBI::dbExecute(
     db_conn,
-    "INSERT INTO teams (team_name, division) VALUES (?, ?)",
+    "INSERT INTO teams (team_name, division) VALUES ($1, $2)",
     params = list("Trophy Wives", 4)
   )
   DBI::dbExecute(
     db_conn,
-    "INSERT INTO teams (team_name, division) VALUES (?, ?)",
+    "INSERT INTO teams (team_name, division) VALUES ($1, $2)",
     params = list("Any Given Saturday", 4)
   )
   DBI::dbExecute(
     db_conn,
-    "INSERT INTO teams (team_name, division) VALUES (?, ?)",
+    "INSERT INTO teams (team_name, division) VALUES ($1, $2)",
     params = list("boozin and losin", 4)
   )
   # add some games
   DBI::dbExecute(
     db_conn,
     "INSERT INTO games (home_team, away_team, start_time, game_type)
-   VALUES (?, ?, ?, ?)",
+   VALUES ($1, $2, $3, $4)",
     params = list(
       1, # home_team (team_id)
       2, # away_team (team_id)
@@ -113,7 +124,7 @@ make_example_data <- function() {
   DBI::dbExecute(
     db_conn,
     "INSERT INTO games (home_team, away_team, start_time, game_type)
-   VALUES (?, ?, ?, ?)",
+   VALUES ($1, $2, $3, $4)",
     params = list(
       1, # home_team (team_id)
       3, # away_team (team_id)

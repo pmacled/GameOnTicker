@@ -49,32 +49,18 @@
         "Package": "GameOnTicker",
         "Title": "Live game clocks and scores for Game On! Football",
         "Version": "0.0.0.9000",
-        "Authors@R": "\n    person(\"Nash\", \"Delcamp\", , \"nash.delcamp@gmail.com\", role = c(\"aut\", \"cre\"))",
+        "Authors@R": "person(\"Nash\", \"Delcamp\", , \"nash.delcamp@gmail.com\", role = c(\"aut\", \"cre\"))",
         "Description": "Roles for administrators, referees, and viewers. Referees manage the game while tracking scoring events. Players and fans keep tabs on games in real time.",
         "License": "MIT + file LICENSE",
-        "Imports": "config, DBI, dplyr, duckdb, golem, pkgload, rhandsontable,\nshiny",
+        "Imports": "config,\nDBI,\ndplyr,\ngolem,\npkgload,\nrhandsontable,\nRPostgres,\nshiny",
         "Encoding": "UTF-8",
+        "LazyData": "true",
         "RoxygenNote": "7.3.2",
         "URL": "https://github.com/pmacled/GameOnTicker",
         "BugReports": "https://github.com/pmacled/GameOnTicker/issues",
-        "Suggests": "spelling, testthat (>= 3.0.0)",
+        "Suggests": "spelling,\ntestthat (>= 3.0.0)",
         "Config/testthat/edition": "3",
-        "Language": "en-US",
-        "RemoteType": "github",
-        "RemoteHost": "api.github.com",
-        "RemoteRepo": "GameOnTicker",
-        "RemoteUsername": "pmacled",
-        "RemoteRef": "HEAD",
-        "RemoteSha": "2904d506d05cca576adcf576f0d032492c5fb213",
-        "GithubRepo": "GameOnTicker",
-        "GithubUsername": "pmacled",
-        "GithubRef": "HEAD",
-        "GithubSHA1": "2904d506d05cca576adcf576f0d032492c5fb213",
-        "NeedsCompilation": "no",
-        "Packaged": "2025-10-22 14:34:19 UTC; nashd",
-        "Author": "Nash Delcamp [aut, cre]",
-        "Maintainer": "Nash Delcamp <nash.delcamp@gmail.com>",
-        "Built": "R 4.4.2; ; 2025-10-22 14:34:20 UTC; windows"
+        "Language": "en-US"
       }
     },
     "R6": {
@@ -102,6 +88,50 @@
         "Repository": "CRAN",
         "Date/Publication": "2025-02-15 00:50:02 UTC",
         "Built": "R 4.4.3; ; 2025-06-04 01:13:39 UTC; windows"
+      }
+    },
+    "RPostgres": {
+      "Source": "CRAN",
+      "Repository": "https://cran.rstudio.com",
+      "description": {
+        "Package": "RPostgres",
+        "Title": "C++ Interface to PostgreSQL",
+        "Version": "1.4.8",
+        "Date": "2025-02-24",
+        "Authors@R": "c(\n    person(\"Hadley\", \"Wickham\", role = \"aut\"),\n    person(\"Jeroen\", \"Ooms\", role = \"aut\"),\n    person(\"Kirill\", \"Müller\", , \"kirill@cynkra.com\", role = c(\"aut\", \"cre\"),\n           comment = c(ORCID = \"0000-0002-1416-3412\")),\n    person(\"RStudio\", role = \"cph\"),\n    person(\"R Consortium\", role = \"fnd\"),\n    person(\"Tomoaki\", \"Nishiyama\", role = \"ctb\",\n           comment = \"Code for encoding vectors into strings derived from RPostgreSQL\")\n  )",
+        "Description": "Fully DBI-compliant C++-backed interface to PostgreSQL\n    <https://www.postgresql.org/>, an open-source relational database.",
+        "License": "MIT + file LICENSE",
+        "URL": "https://rpostgres.r-dbi.org, https://github.com/r-dbi/RPostgres",
+        "BugReports": "https://github.com/r-dbi/RPostgres/issues",
+        "Depends": "R (>= 3.1.0)",
+        "Imports": "bit64, blob (>= 1.2.0), DBI (>= 1.2.0), hms (>= 1.0.0),\nlubridate, methods, withr",
+        "Suggests": "callr, covr, DBItest (>= 1.7.3), knitr, rlang, rmarkdown,\ntestthat (>= 3.0.0)",
+        "LinkingTo": "cpp11, plogr (>= 0.2.0)",
+        "Config/Needs/website": "r-dbi/dbitemplate",
+        "VignetteBuilder": "knitr",
+        "Config/Needs/build": "decor",
+        "Config/autostyle/scope": "line_breaks",
+        "Config/autostyle/strict": "false",
+        "Config/testthat/edition": "3",
+        "Encoding": "UTF-8",
+        "LazyLoad": "true",
+        "RoxygenNote": "7.3.2.9000",
+        "SystemRequirements": "libpq >= 9.0: libpq-dev (deb) or postgresql-devel\n(rpm)",
+        "Collate": "'PqDriver.R' 'PqConnection.R' 'PqResult.R' 'RPostgres-pkg.R'\n'Redshift.R' 'cpp11.R' 'dbAppendTable_PqConnection.R'\n'dbBegin_PqConnection.R' 'dbBind_PqResult.R'\n'dbClearResult_PqResult.R' 'dbColumnInfo_PqResult.R'\n'dbCommit_PqConnection.R' 'dbConnect_PqDriver.R'\n'dbConnect_RedshiftDriver.R' 'dbDataType_PqConnection.R'\n'dbDataType_PqDriver.R' 'dbDisconnect_PqConnection.R'\n'dbExistsTable_PqConnection_Id.R'\n'dbExistsTable_PqConnection_character.R' 'dbFetch_PqResult.R'\n'dbGetInfo_PqConnection.R' 'dbGetInfo_PqDriver.R'\n'dbGetRowCount_PqResult.R' 'dbGetRowsAffected_PqResult.R'\n'dbGetStatement_PqResult.R' 'dbHasCompleted_PqResult.R'\n'dbIsValid_PqConnection.R' 'dbIsValid_PqDriver.R'\n'dbIsValid_PqResult.R' 'dbListFields_PqConnection_Id.R'\n'dbListFields_PqConnection_character.R'\n'dbListObjects_PqConnection_ANY.R'\n'dbListTables_PqConnection.R'\n'dbQuoteIdentifier_PqConnection_Id.R'\n'dbQuoteIdentifier_PqConnection_SQL.R'\n'dbQuoteIdentifier_PqConnection_character.R'\n'dbQuoteLiteral_PqConnection.R'\n'dbQuoteString_PqConnection_SQL.R'\n'dbQuoteString_PqConnection_character.R'\n'dbReadTable_PqConnection_character.R'\n'dbRemoveTable_PqConnection_character.R'\n'dbRollback_PqConnection.R' 'dbSendQuery_PqConnection.R'\n'dbUnloadDriver_PqDriver.R'\n'dbUnquoteIdentifier_PqConnection_SQL.R'\n'dbWriteTable_PqConnection_character_data.frame.R' 'default.R'\n'export.R' 'quote.R' 'show_PqConnection.R'\n'sqlData_PqConnection.R' 'tables.R' 'transactions.R' 'utils.R'",
+        "NeedsCompilation": "yes",
+        "Packaged": "2025-02-25 05:33:04 UTC; kirill",
+        "Author": "Hadley Wickham [aut],\n  Jeroen Ooms [aut],\n  Kirill Müller [aut, cre] (<https://orcid.org/0000-0002-1416-3412>),\n  RStudio [cph],\n  R Consortium [fnd],\n  Tomoaki Nishiyama [ctb] (Code for encoding vectors into strings derived\n    from RPostgreSQL)",
+        "Maintainer": "Kirill Müller <kirill@cynkra.com>",
+        "Repository": "CRAN",
+        "Date/Publication": "2025-02-25 07:30:02 UTC",
+        "Built": "R 4.4.3; x86_64-w64-mingw32; 2025-10-21 13:18:45 UTC; windows",
+        "Archs": "x64",
+        "RemoteType": "standard",
+        "RemotePkgRef": "RPostgres",
+        "RemoteRef": "RPostgres",
+        "RemoteRepos": "https://cran.rstudio.com/",
+        "RemotePkgPlatform": "x86_64-w64-mingw32",
+        "RemoteSha": "1.4.8"
       }
     },
     "Rcpp": {
@@ -184,6 +214,93 @@
         "Date/Publication": "2015-07-28 08:03:37",
         "Built": "R 4.4.0; x86_64-w64-mingw32; 2024-04-23 00:24:00 UTC; windows",
         "Archs": "x64"
+      }
+    },
+    "bit": {
+      "Source": "CRAN",
+      "Repository": "https://cran.rstudio.com",
+      "description": {
+        "Package": "bit",
+        "Title": "Classes and Methods for Fast Memory-Efficient Boolean Selections",
+        "Version": "4.6.0",
+        "Authors@R": "c(\n    person(\"Michael\", \"Chirico\", email = \"MichaelChirico4@gmail.com\", role = c(\"aut\", \"cre\")),\n    person(\"Jens\", \"Oehlschlägel\", role = \"aut\"),\n    person(\"Brian\", \"Ripley\", role = \"ctb\")\n  )",
+        "Depends": "R (>= 3.4.0)",
+        "Suggests": "testthat (>= 3.0.0), roxygen2, knitr, markdown, rmarkdown,\nmicrobenchmark, bit64 (>= 4.0.0), ff (>= 4.0.0)",
+        "Description": "Provided are classes for boolean and skewed boolean vectors,\n    fast boolean methods, fast unique and non-unique integer sorting,\n    fast set operations on sorted and unsorted sets of integers, and\n    foundations for ff (range index, compression, chunked processing).",
+        "License": "GPL-2 | GPL-3",
+        "LazyLoad": "yes",
+        "ByteCompile": "yes",
+        "Encoding": "UTF-8",
+        "URL": "https://github.com/r-lib/bit",
+        "VignetteBuilder": "knitr, rmarkdown",
+        "RoxygenNote": "7.3.2",
+        "Config/testthat/edition": "3",
+        "NeedsCompilation": "yes",
+        "Packaged": "2025-03-05 07:18:45 UTC; michael",
+        "Author": "Michael Chirico [aut, cre],\n  Jens Oehlschlägel [aut],\n  Brian Ripley [ctb]",
+        "Maintainer": "Michael Chirico <MichaelChirico4@gmail.com>",
+        "Repository": "CRAN",
+        "Date/Publication": "2025-03-06 10:50:01 UTC",
+        "Built": "R 4.4.3; x86_64-w64-mingw32; 2025-06-04 01:13:51 UTC; windows",
+        "Archs": "x64"
+      }
+    },
+    "bit64": {
+      "Source": "CRAN",
+      "Repository": "https://cran.rstudio.com",
+      "description": {
+        "Package": "bit64",
+        "Title": "A S3 Class for Vectors of 64bit Integers",
+        "Version": "4.6.0-1",
+        "Authors@R": "c(\n    person(\"Michael\", \"Chirico\", email = \"michaelchirico4@gmail.com\", role = c(\"aut\", \"cre\")),\n    person(\"Jens\", \"Oehlschlägel\", role = \"aut\"),\n    person(\"Leonardo\", \"Silvestri\", role = \"ctb\"),\n    person(\"Ofek\", \"Shilon\", role = \"ctb\")\n  )",
+        "Depends": "R (>= 3.4.0), bit (>= 4.0.0)",
+        "Description": "\n  Package 'bit64' provides serializable S3 atomic 64bit (signed) integers.\n  These are useful for handling database keys and exact counting in +-2^63.\n  WARNING: do not use them as replacement for 32bit integers, integer64 are not\n  supported for subscripting by R-core and they have different semantics when\n  combined with double, e.g. integer64 + double => integer64.\n  Class integer64 can be used in vectors, matrices, arrays and data.frames.\n  Methods are available for coercion from and to logicals, integers, doubles,\n  characters and factors as well as many elementwise and summary functions.\n  Many fast algorithmic operations such as 'match' and 'order' support inter-\n  active data exploration and manipulation and optionally leverage caching.",
+        "License": "GPL-2 | GPL-3",
+        "LazyLoad": "yes",
+        "ByteCompile": "yes",
+        "URL": "https://github.com/r-lib/bit64",
+        "Encoding": "UTF-8",
+        "Imports": "graphics, methods, stats, utils",
+        "Suggests": "testthat (>= 3.0.3), withr",
+        "Config/testthat/edition": "3",
+        "Config/needs/development": "testthat",
+        "RoxygenNote": "7.3.2",
+        "NeedsCompilation": "yes",
+        "Packaged": "2025-01-16 14:04:20 UTC; michael",
+        "Author": "Michael Chirico [aut, cre],\n  Jens Oehlschlägel [aut],\n  Leonardo Silvestri [ctb],\n  Ofek Shilon [ctb]",
+        "Maintainer": "Michael Chirico <michaelchirico4@gmail.com>",
+        "Repository": "CRAN",
+        "Date/Publication": "2025-01-16 16:00:07 UTC",
+        "Built": "R 4.4.3; x86_64-w64-mingw32; 2025-06-04 01:55:27 UTC; windows",
+        "Archs": "x64"
+      }
+    },
+    "blob": {
+      "Source": "CRAN",
+      "Repository": "https://cran.rstudio.com",
+      "description": {
+        "Package": "blob",
+        "Title": "A Simple S3 Class for Representing Vectors of Binary Data\n('BLOBS')",
+        "Version": "1.2.4",
+        "Authors@R": "c(\n    person(\"Hadley\", \"Wickham\", role = \"aut\"),\n    person(\"Kirill\", \"Müller\", , \"kirill@cynkra.com\", role = \"cre\"),\n    person(\"RStudio\", role = c(\"cph\", \"fnd\"))\n  )",
+        "Description": "R's raw vector is useful for storing a single binary object.\n    What if you want to put a vector of them in a data frame? The 'blob'\n    package provides the blob object, a list of raw vectors, suitable for\n    use as a column in data frame.",
+        "License": "MIT + file LICENSE",
+        "URL": "https://blob.tidyverse.org, https://github.com/tidyverse/blob",
+        "BugReports": "https://github.com/tidyverse/blob/issues",
+        "Imports": "methods, rlang, vctrs (>= 0.2.1)",
+        "Suggests": "covr, crayon, pillar (>= 1.2.1), testthat",
+        "Config/autostyle/scope": "line_breaks",
+        "Config/autostyle/strict": "false",
+        "Config/Needs/website": "tidyverse/tidytemplate",
+        "Encoding": "UTF-8",
+        "RoxygenNote": "7.2.3",
+        "NeedsCompilation": "no",
+        "Packaged": "2023-03-17 09:42:50 UTC; kirill",
+        "Author": "Hadley Wickham [aut],\n  Kirill Müller [cre],\n  RStudio [cph, fnd]",
+        "Maintainer": "Kirill Müller <kirill@cynkra.com>",
+        "Repository": "CRAN",
+        "Date/Publication": "2023-03-17 12:00:06 UTC",
+        "Built": "R 4.4.3; ; 2025-06-04 02:40:23 UTC; windows"
       }
     },
     "bslib": {
@@ -365,6 +482,35 @@
         "RemoteRepos": "https://cran.rstudio.com/",
         "RemotePkgPlatform": "i386+x86_64-w64-mingw32",
         "RemoteSha": "0.3.2"
+      }
+    },
+    "cpp11": {
+      "Source": "CRAN",
+      "Repository": "https://cran.rstudio.com",
+      "description": {
+        "Package": "cpp11",
+        "Title": "A C++11 Interface for R's C Interface",
+        "Version": "0.5.2",
+        "Authors@R": "\n    c(\n      person(\"Davis\", \"Vaughan\", email = \"davis@posit.co\", role = c(\"aut\", \"cre\"), comment = c(ORCID = \"0000-0003-4777-038X\")),\n      person(\"Jim\",\"Hester\", role = \"aut\", comment = c(ORCID = \"0000-0002-2739-7082\")),\n      person(\"Romain\", \"François\", role = \"aut\", comment = c(ORCID = \"0000-0002-2444-4226\")),\n      person(\"Benjamin\", \"Kietzman\", role = \"ctb\"),\n      person(\"Posit Software, PBC\", role = c(\"cph\", \"fnd\"))\n    )",
+        "Description": "Provides a header only, C++11 interface to R's C\n    interface.  Compared to other approaches 'cpp11' strives to be safe\n    against long jumps from the C API as well as C++ exceptions, conform\n    to normal R function semantics and supports interaction with 'ALTREP'\n    vectors.",
+        "License": "MIT + file LICENSE",
+        "URL": "https://cpp11.r-lib.org, https://github.com/r-lib/cpp11",
+        "BugReports": "https://github.com/r-lib/cpp11/issues",
+        "Depends": "R (>= 4.0.0)",
+        "Suggests": "bench, brio, callr, cli, covr, decor, desc, ggplot2, glue,\nknitr, lobstr, mockery, progress, rmarkdown, scales, Rcpp,\ntestthat (>= 3.2.0), tibble, utils, vctrs, withr",
+        "VignetteBuilder": "knitr",
+        "Config/Needs/website": "tidyverse/tidytemplate",
+        "Config/testthat/edition": "3",
+        "Config/Needs/cpp11/cpp_register": "brio, cli, decor, desc, glue, tibble,\nvctrs",
+        "Encoding": "UTF-8",
+        "RoxygenNote": "7.3.2",
+        "NeedsCompilation": "no",
+        "Packaged": "2025-03-03 22:24:28 UTC; davis",
+        "Author": "Davis Vaughan [aut, cre] (<https://orcid.org/0000-0003-4777-038X>),\n  Jim Hester [aut] (<https://orcid.org/0000-0002-2739-7082>),\n  Romain François [aut] (<https://orcid.org/0000-0002-2444-4226>),\n  Benjamin Kietzman [ctb],\n  Posit Software, PBC [cph, fnd]",
+        "Maintainer": "Davis Vaughan <davis@posit.co>",
+        "Repository": "CRAN",
+        "Date/Publication": "2025-03-03 23:20:02 UTC",
+        "Built": "R 4.4.3; ; 2025-06-04 01:13:40 UTC; windows"
       }
     },
     "desc": {
@@ -772,6 +918,36 @@
         "Built": "R 4.4.3; ; 2025-06-04 01:55:25 UTC; windows"
       }
     },
+    "hms": {
+      "Source": "CRAN",
+      "Repository": "https://cran.rstudio.com",
+      "description": {
+        "Package": "hms",
+        "Title": "Pretty Time of Day",
+        "Date": "2023-03-21",
+        "Version": "1.1.3",
+        "Authors@R": "c(\n    person(\"Kirill\", \"Müller\", role = c(\"aut\", \"cre\"), email = \"kirill@cynkra.com\", comment = c(ORCID = \"0000-0002-1416-3412\")),\n    person(\"R Consortium\", role = \"fnd\"),\n    person(\"RStudio\", role = \"fnd\")\n    )",
+        "Description": "Implements an S3 class for storing and formatting time-of-day\n    values, based on the 'difftime' class.",
+        "Imports": "lifecycle, methods, pkgconfig, rlang (>= 1.0.2), vctrs (>=\n0.3.8)",
+        "Suggests": "crayon, lubridate, pillar (>= 1.1.0), testthat (>= 3.0.0)",
+        "License": "MIT + file LICENSE",
+        "Encoding": "UTF-8",
+        "URL": "https://hms.tidyverse.org/, https://github.com/tidyverse/hms",
+        "BugReports": "https://github.com/tidyverse/hms/issues",
+        "RoxygenNote": "7.2.3",
+        "Config/testthat/edition": "3",
+        "Config/autostyle/scope": "line_breaks",
+        "Config/autostyle/strict": "false",
+        "Config/Needs/website": "tidyverse/tidytemplate",
+        "NeedsCompilation": "no",
+        "Packaged": "2023-03-21 16:52:11 UTC; kirill",
+        "Author": "Kirill Müller [aut, cre] (<https://orcid.org/0000-0002-1416-3412>),\n  R Consortium [fnd],\n  RStudio [fnd]",
+        "Maintainer": "Kirill Müller <kirill@cynkra.com>",
+        "Repository": "CRAN",
+        "Date/Publication": "2023-03-21 18:10:02 UTC",
+        "Built": "R 4.4.3; ; 2025-06-04 02:40:24 UTC; windows"
+      }
+    },
     "htmltools": {
       "Source": "CRAN",
       "Repository": "https://cran.rstudio.com",
@@ -1005,6 +1181,41 @@
         "Built": "R 4.4.3; ; 2025-06-04 01:55:23 UTC; windows"
       }
     },
+    "lubridate": {
+      "Source": "CRAN",
+      "Repository": "https://cran.rstudio.com",
+      "description": {
+        "Type": "Package",
+        "Package": "lubridate",
+        "Title": "Make Dealing with Dates a Little Easier",
+        "Version": "1.9.4",
+        "Authors@R": "c(\n    person(\"Vitalie\", \"Spinu\", , \"spinuvit@gmail.com\", role = c(\"aut\", \"cre\")),\n    person(\"Garrett\", \"Grolemund\", role = \"aut\"),\n    person(\"Hadley\", \"Wickham\", role = \"aut\"),\n    person(\"Davis\", \"Vaughan\", role = \"ctb\"),\n    person(\"Ian\", \"Lyttle\", role = \"ctb\"),\n    person(\"Imanuel\", \"Costigan\", role = \"ctb\"),\n    person(\"Jason\", \"Law\", role = \"ctb\"),\n    person(\"Doug\", \"Mitarotonda\", role = \"ctb\"),\n    person(\"Joseph\", \"Larmarange\", role = \"ctb\"),\n    person(\"Jonathan\", \"Boiser\", role = \"ctb\"),\n    person(\"Chel Hee\", \"Lee\", role = \"ctb\")\n  )",
+        "Maintainer": "Vitalie Spinu <spinuvit@gmail.com>",
+        "Description": "Functions to work with date-times and time-spans: fast and\n    user friendly parsing of date-time data, extraction and updating of\n    components of a date-time (years, months, days, hours, minutes, and\n    seconds), algebraic manipulation on date-time and time-span objects.\n    The 'lubridate' package has a consistent and memorable syntax that\n    makes working with dates easy and fun.",
+        "License": "GPL (>= 2)",
+        "URL": "https://lubridate.tidyverse.org,\nhttps://github.com/tidyverse/lubridate",
+        "BugReports": "https://github.com/tidyverse/lubridate/issues",
+        "Depends": "methods, R (>= 3.2)",
+        "Imports": "generics, timechange (>= 0.3.0)",
+        "Suggests": "covr, knitr, rmarkdown, testthat (>= 2.1.0), vctrs (>= 0.6.5)",
+        "Enhances": "chron, data.table, timeDate, tis, zoo",
+        "VignetteBuilder": "knitr",
+        "Config/Needs/website": "tidyverse/tidytemplate",
+        "Config/testthat/edition": "3",
+        "Encoding": "UTF-8",
+        "LazyData": "true",
+        "RoxygenNote": "7.2.3",
+        "SystemRequirements": "C++11, A system with zoneinfo data (e.g.\n/usr/share/zoneinfo). On Windows the zoneinfo included with R\nis used.",
+        "Collate": "'Dates.r' 'POSIXt.r' 'util.r' 'parse.r' 'timespans.r'\n'intervals.r' 'difftimes.r' 'durations.r' 'periods.r'\n'accessors-date.R' 'accessors-day.r' 'accessors-dst.r'\n'accessors-hour.r' 'accessors-minute.r' 'accessors-month.r'\n'accessors-quarter.r' 'accessors-second.r' 'accessors-tz.r'\n'accessors-week.r' 'accessors-year.r' 'am-pm.r' 'time-zones.r'\n'numeric.r' 'coercion.r' 'constants.r' 'cyclic_encoding.r'\n'data.r' 'decimal-dates.r' 'deprecated.r' 'format_ISO8601.r'\n'guess.r' 'hidden.r' 'instants.r' 'leap-years.r'\n'ops-addition.r' 'ops-compare.r' 'ops-division.r'\n'ops-integer-division.r' 'ops-m+.r' 'ops-modulo.r'\n'ops-multiplication.r' 'ops-subtraction.r' 'package.r'\n'pretty.r' 'round.r' 'stamp.r' 'tzdir.R' 'update.r' 'vctrs.R'\n'zzz.R'",
+        "NeedsCompilation": "yes",
+        "Packaged": "2024-12-07 23:41:45 UTC; vitalie",
+        "Author": "Vitalie Spinu [aut, cre],\n  Garrett Grolemund [aut],\n  Hadley Wickham [aut],\n  Davis Vaughan [ctb],\n  Ian Lyttle [ctb],\n  Imanuel Costigan [ctb],\n  Jason Law [ctb],\n  Doug Mitarotonda [ctb],\n  Joseph Larmarange [ctb],\n  Jonathan Boiser [ctb],\n  Chel Hee Lee [ctb]",
+        "Repository": "CRAN",
+        "Date/Publication": "2024-12-08 12:10:02 UTC",
+        "Built": "R 4.4.3; x86_64-w64-mingw32; 2025-06-04 01:55:28 UTC; windows",
+        "Archs": "x64"
+      }
+    },
     "magrittr": {
       "Source": "CRAN",
       "Repository": "https://cran.rstudio.com",
@@ -1228,6 +1439,32 @@
         "Repository": "CRAN",
         "Date/Publication": "2025-09-23 10:20:02 UTC",
         "Built": "R 4.4.3; ; 2025-10-13 10:26:51 UTC; windows"
+      }
+    },
+    "plogr": {
+      "Source": "CRAN",
+      "Repository": "https://cran.rstudio.com",
+      "description": {
+        "Package": "plogr",
+        "Title": "The 'plog' C++ Logging Library",
+        "Version": "0.2.0",
+        "Date": "2018-03-24",
+        "Authors@R": "c(\n  person(\"Kirill\", \"Müller\", role = c(\"aut\", \"cre\"), email = \"krlmlr+r@mailbox.org\"),\n  person(\"Sergey\", \"Podobry\", role = \"cph\", comment = \"Author of the bundled plog library\"))",
+        "Description": "\n  A simple header-only logging library for C++.\n  Add 'LinkingTo: plogr' to 'DESCRIPTION', and '#include <plogr.h>' in your C++ modules to use it.",
+        "Suggests": "Rcpp",
+        "License": "MIT + file LICENSE",
+        "Encoding": "UTF-8",
+        "LazyData": "true",
+        "URL": "https://github.com/krlmlr/plogr#readme",
+        "BugReports": "https://github.com/krlmlr/plogr/issues",
+        "RoxygenNote": "6.0.1.9000",
+        "NeedsCompilation": "no",
+        "Packaged": "2018-03-24 11:02:06 UTC; muelleki",
+        "Author": "Kirill Müller [aut, cre],\n  Sergey Podobry [cph] (Author of the bundled plog library)",
+        "Maintainer": "Kirill Müller <krlmlr+r@mailbox.org>",
+        "Repository": "CRAN",
+        "Date/Publication": "2018-03-25 15:25:27 UTC",
+        "Built": "R 4.4.3; ; 2025-06-27 00:39:26 UTC; windows"
       }
     },
     "processx": {
@@ -1633,6 +1870,34 @@
         "Built": "R 4.4.3; ; 2025-06-04 02:40:23 UTC; windows"
       }
     },
+    "timechange": {
+      "Source": "CRAN",
+      "Repository": "https://cran.rstudio.com",
+      "description": {
+        "Package": "timechange",
+        "Title": "Efficient Manipulation of Date-Times",
+        "Version": "0.3.0",
+        "Authors@R": "c(person(\"Vitalie\", \"Spinu\", email = \"spinuvit@gmail.com\", role = c(\"aut\", \"cre\")),\n             person(\"Google Inc.\", role = c(\"ctb\", \"cph\")))",
+        "Description": "Efficient routines for manipulation of date-time objects while\n   accounting for time-zones and daylight saving times. The package includes\n   utilities for updating of date-time components (year, month, day etc.),\n   modification of time-zones, rounding of date-times, period addition and\n   subtraction etc. Parts of the 'CCTZ' source code, released under the Apache\n   2.0 License, are included in this package. See\n   <https://github.com/google/cctz> for more details.",
+        "Depends": "R (>= 3.3)",
+        "License": "GPL (>= 3)",
+        "Encoding": "UTF-8",
+        "LinkingTo": "cpp11 (>= 0.2.7)",
+        "Suggests": "testthat (>= 0.7.1.99), knitr",
+        "SystemRequirements": "A system with zoneinfo data (e.g.\n/usr/share/zoneinfo) as well as a recent-enough C++11 compiler\n(such as g++-4.8 or later). On Windows the zoneinfo included\nwith R is used.",
+        "BugReports": "https://github.com/vspinu/timechange/issues",
+        "URL": "https://github.com/vspinu/timechange/",
+        "RoxygenNote": "7.2.1",
+        "NeedsCompilation": "yes",
+        "Packaged": "2024-01-18 08:57:24 UTC; vspinu",
+        "Author": "Vitalie Spinu [aut, cre],\n  Google Inc. [ctb, cph]",
+        "Maintainer": "Vitalie Spinu <spinuvit@gmail.com>",
+        "Repository": "CRAN",
+        "Date/Publication": "2024-01-18 09:20:02 UTC",
+        "Built": "R 4.4.3; x86_64-w64-mingw32; 2025-06-04 01:13:53 UTC; windows",
+        "Archs": "x64"
+      }
+    },
     "tinytex": {
       "Source": "CRAN",
       "Repository": "https://cran.rstudio.com",
@@ -1835,16 +2100,13 @@
       "checksum": "abfa00a5cf29aa1d109a2f7a2b20092f"
     },
     ".Renviron": {
-      "checksum": "c3530ab6e9f0c42b1da9da8eaea0256b"
+      "checksum": "3d8b805dd6e570bf171051954baaafe2"
     },
     "app.R": {
       "checksum": "220069a618c62a7ff734ff7d66739e92"
     },
     "DESCRIPTION": {
-      "checksum": "fedb08818f2731fd02324430e56f64c9"
-    },
-    "inst/app/data/gameon.duckdb": {
-      "checksum": "d053dc97fd2f31e23330bcdffc5fb3fb"
+      "checksum": "5e46487a7e76b9dd87657d3d5c78767a"
     },
     "inst/app/www/favicon.png": {
       "checksum": "56b6298f4a4f941c771b56552c10a552"
@@ -1871,7 +2133,7 @@
       "checksum": "552adb84482353005909c42185dcea85"
     },
     "R/db_utils.R": {
-      "checksum": "e879f89b8bdebfa27d60e2d43f354a61"
+      "checksum": "d8628e20196a1ef1c50638670931d8cd"
     },
     "R/golem_utils_server.R": {
       "checksum": "c2998ee5dbb57c9af79904bc79133f74"
@@ -1880,13 +2142,13 @@
       "checksum": "1694775e681b1a4cf1ce4d2dda7e0316"
     },
     "R/mod_data_controls.R": {
-      "checksum": "8c6bc25af6635b3efc88889f9a8f8020"
+      "checksum": "f82e54f11c99b3858b084546f2e4e5c5"
     },
     "R/mod_play_by_play_view.R": {
-      "checksum": "1cf2af3c24afba15708d7cb427a24787"
+      "checksum": "bc6141976a50f8c0468a282b75634c61"
     },
     "R/mod_referee_controls.R": {
-      "checksum": "c3af959d6dd794d8836787444da32b6e"
+      "checksum": "d0af1fcd706b1ecaa4bb94500de352c2"
     },
     "R/run_app.R": {
       "checksum": "4d19509f058abc65cfd23c7353a7c94c"

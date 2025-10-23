@@ -18,7 +18,7 @@ mod_data_controls_ui <- function(id) {
 
 #' data_controls Server Function
 #'
-#' @param db_conn A DBI connection to the DuckDB database.
+#' @param db_conn A DBI connection to the database.
 #' @noRd
 mod_data_controls_server <- function(id, db_conn) {
   moduleServer(id, function(input, output, session) {

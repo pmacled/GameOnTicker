@@ -68,7 +68,7 @@ mod_play_by_play_view_server <- function(id, db_conn, game_id) {
      LEFT JOIN games g ON e.game_id = g.game_id
      LEFT JOIN teams th ON g.home_team = th.team_id
      LEFT JOIN teams ta ON g.away_team = ta.team_id
-     WHERE e.game_id = ?
+     WHERE e.game_id = $1
      ORDER BY e.event_id ASC",
         params = list(game_id)
       )
