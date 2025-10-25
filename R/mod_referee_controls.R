@@ -311,7 +311,7 @@ mod_referee_controls_server <- function(id, db_conn, game_id) {
       if (!defense) {
         # offense scores
         if (turnover_lgl) {
-          turnover_on_downs()
+          turnover_on_downs(record = record)
         } else {
           if (possession_rv() == "Home") {
             score_home_rv(score_home_rv() + points)
