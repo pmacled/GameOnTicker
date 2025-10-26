@@ -65,16 +65,16 @@
         "RemoteRepo": "GameOnTicker",
         "RemoteUsername": "pmacled",
         "RemoteRef": "HEAD",
-        "RemoteSha": "3c7f1e82aab2e3efc81bd6356ac3a60e3512cec1",
+        "RemoteSha": "3ec75b970a8036175ce5be691fbbf2bd3f00c60f",
         "GithubRepo": "GameOnTicker",
         "GithubUsername": "pmacled",
         "GithubRef": "HEAD",
-        "GithubSHA1": "3c7f1e82aab2e3efc81bd6356ac3a60e3512cec1",
+        "GithubSHA1": "3ec75b970a8036175ce5be691fbbf2bd3f00c60f",
         "NeedsCompilation": "no",
-        "Packaged": "2025-10-23 01:52:11 UTC; nashd",
+        "Packaged": "2025-10-26 12:48:02 UTC; nashd",
         "Author": "Nash Delcamp [aut, cre]",
         "Maintainer": "Nash Delcamp <nash.delcamp@gmail.com>",
-        "Built": "R 4.4.2; ; 2025-10-23 01:52:11 UTC; windows"
+        "Built": "R 4.4.2; ; 2025-10-26 12:48:02 UTC; windows"
       }
     },
     "R6": {
@@ -2119,7 +2119,7 @@
       "checksum": "bc6141976a50f8c0468a282b75634c61"
     },
     "R/mod_referee_controls.R": {
-      "checksum": "d0af1fcd706b1ecaa4bb94500de352c2"
+      "checksum": "61ed72828549fa6e550674e5d5f87c41"
     },
     "R/run_app.R": {
       "checksum": "4d19509f058abc65cfd23c7353a7c94c"
