@@ -4,7 +4,8 @@ gameon_db_connect <- function(
   port = Sys.getenv("DB_PORT"),
   dbname = Sys.getenv("DB_NAME"),
   user = Sys.getenv("DB_USER"),
-  password = Sys.getenv("DB_PASSWORD")
+  password = Sys.getenv("DB_PASSWORD"),
+  sslmode = "require"
 ) {
   DBI::dbConnect(
     drv = drv,
@@ -12,6 +13,7 @@ gameon_db_connect <- function(
     port = port,
     dbname = dbname,
     user = user,
-    password = password
+    password = password,
+    sslmode = "require"
   )
 }
