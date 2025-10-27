@@ -27,7 +27,7 @@ mod_play_by_play_view_server <- function(id, db_conn, game_id) {
     format_clock <- function(ms) {
       mins <- ms %/% 60000
       secs <- (ms %% 60000) %/% 1000
-      sprintf("%02d:%02d", mins, secs)
+      sprintf("%02d:%02d", as.integer(mins), as.integer(secs))
     }
 
     # Helper: Map event type to label
@@ -77,26 +77,20 @@ mod_play_by_play_view_server <- function(id, db_conn, game_id) {
       }
 
       # Team for event (possession or defense)
-      events$team <- dplyr::case_when(
+      events$team_name <- dplyr::case_when(
         # timeouts
-        grepl("home", events$type) ~ events$home_team,
-        grepl("away", events$type) ~ events$away_team,
+        grepl("home", events$type) ~ events$home_team_name,
+        grepl("away", events$type) ~ events$away_team_name,
         # defensive plays
         grepl("def|safety|turnover", events$type) &
           events$possession == "Home" ~
-          events$away_team,
+          events$away_team_name,
         grepl("def|safety|turnover", events$type) &
           events$possession == "Away" ~
-          events$home_team,
+          events$home_team_name,
         # remaining plays (offense)
-        events$possession == "Home" ~ events$home_team,
-        events$possession == "Away" ~ events$away_team,
-        TRUE ~ NA_integer_
-      )
-      # Map team to team_name
-      events$team_name <- dplyr::case_when(
-        events$team == events$home_team ~ events$home_team_name,
-        events$team == events$away_team ~ events$away_team_name,
+        events$possession == "Home" ~ events$home_team_name,
+        events$possession == "Away" ~ events$away_team_name,
         TRUE ~ NA_character_
       )
       # Event description
