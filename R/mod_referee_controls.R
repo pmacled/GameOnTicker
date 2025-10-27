@@ -64,7 +64,7 @@ mod_referee_controls_server <- function(id, db_conn, game_id) {
     # reactive values
     timer_mode <- reactiveVal("first_half") # "first_half", "halftime", "second_half", "ended"
     clock_running_rv <- reactiveVal(FALSE)
-    clock_ms_rv <- reactiveVal(20 * 60 * 1000) # 20 minutes in ms
+    clock_ms_rv <- reactiveVal(25 * 60 * 1000) # 25 minutes in ms
     timer <- reactiveTimer(100, session) # triggers every 100 ms
 
     play_clock_ms_rv <- reactiveVal(30 * 1000)
@@ -484,7 +484,7 @@ mod_referee_controls_server <- function(id, db_conn, game_id) {
         record_event("start_second_half")
       }
       timer_mode("second_half")
-      clock_ms_rv(20 * 60 * 1000)
+      clock_ms_rv(25 * 60 * 1000)
       change_possession()
     }
 
