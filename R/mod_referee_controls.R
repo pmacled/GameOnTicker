@@ -94,12 +94,14 @@ mod_referee_controls_server <- function(id, db_conn, game_id) {
             first_half = 1,
             halftime = 1,
             second_half = 2,
-            ended = 2
+            ended = 2,
+            final = 2
           ),
           switch(
             timer_mode(),
             halftime = 0,
             ended = 0,
+            final = 0,
             clock_ms_rv()
           ),
           down_rv(),
@@ -414,7 +416,19 @@ mod_referee_controls_server <- function(id, db_conn, game_id) {
       timer_mode("ended")
       showModal(modalDialog(
         title = "End of Game",
-        "Game ended."
+        "Game ended. Finalize game when ready."
+      ))
+    }
+
+    # Helper to finalize a game
+    finalize_game <- function(record = TRUE) {
+      if (record) {
+        record_event("finalize_game")
+      }
+      timer_mode("final")
+      showModal(modalDialog(
+        title = "Game Finalized",
+        "Game finalized."
       ))
     }
 
@@ -435,7 +449,7 @@ mod_referee_controls_server <- function(id, db_conn, game_id) {
     }
 
     # reactive values
-    timer_mode <- reactiveVal("first_half") # "first_half", "halftime", "second_half", "ended"
+    timer_mode <- reactiveVal("first_half") # "first_half", "halftime", "second_half", "ended", "final"
     clock_running_rv <- reactiveVal(FALSE)
     clock_ms_rv <- reactiveVal(25 * 60 * 1000) # 25 minutes in ms
     timer <- reactiveTimer(100, session) # triggers every 100 ms
@@ -573,6 +587,10 @@ mod_referee_controls_server <- function(id, db_conn, game_id) {
       start_second_half()
     })
 
+    observeEvent(input$finalize_game, {
+      finalize_game()
+    })
+
     output$game_clock_display <- renderUI({
       mins <- clock_ms_rv() %/% 60000
       secs <- clock_ms_rv() %% 60000 %/% 1000
@@ -581,7 +599,8 @@ mod_referee_controls_server <- function(id, db_conn, game_id) {
         "first_half" = "1st Half",
         "halftime" = "Halftime",
         "second_half" = "2nd Half",
-        "ended" = "Game Ended"
+        "ended" = "Game Ended",
+        "final" = "Final"
       )
       tags$h2(sprintf(
         "%02d:%02d (%s)",
@@ -759,15 +778,23 @@ mod_referee_controls_server <- function(id, db_conn, game_id) {
         "Start Second Half"
       )
 
+      finalize_game_button <- actionButton(
+        ns("finalize_game"),
+        "Finalize Game"
+      )
+
       tagList(
         # call timeouts
         actionButton(ns("timeout_home"), "Home Timeout"),
         actionButton(ns("timeout_away"), "Away Timeout"),
-        if (is.na(down_rv())) {
+        if (timer_mode() == "final") {
+          NULL
+        } else if (is.na(down_rv())) {
           # PAT options
           column(
             12,
             if (timer_mode() == "halftime") halftime_button,
+            if (timer_mode() == "ended") finalize_game_button,
             fluidRow(tags$strong("Offense")),
             fluidRow(
               tags$div(
@@ -799,6 +826,7 @@ mod_referee_controls_server <- function(id, db_conn, game_id) {
           column(
             12,
             if (timer_mode() == "halftime") halftime_button,
+            if (timer_mode() == "ended") finalize_game_button,
             fluidRow(tags$strong("Offense")),
             fluidRow(
               tags$div(
