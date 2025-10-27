@@ -65,16 +65,16 @@
         "RemoteRepo": "GameOnTicker",
         "RemoteUsername": "pmacled",
         "RemoteRef": "HEAD",
-        "RemoteSha": "fdd9293adac8b969a31aa42fec47b3f766d20490",
+        "RemoteSha": "e95431030b3071f25bd46062ebe23d82daae97fb",
         "GithubRepo": "GameOnTicker",
         "GithubUsername": "pmacled",
         "GithubRef": "HEAD",
-        "GithubSHA1": "fdd9293adac8b969a31aa42fec47b3f766d20490",
+        "GithubSHA1": "e95431030b3071f25bd46062ebe23d82daae97fb",
         "NeedsCompilation": "no",
-        "Packaged": "2025-10-27 13:44:23 UTC; nashd",
+        "Packaged": "2025-10-27 13:54:14 UTC; nashd",
         "Author": "Nash Delcamp [aut, cre]",
         "Maintainer": "Nash Delcamp <nash.delcamp@gmail.com>",
-        "Built": "R 4.4.2; ; 2025-10-27 13:44:23 UTC; windows"
+        "Built": "R 4.4.2; ; 2025-10-27 13:54:14 UTC; windows"
       }
     },
     "R6": {
@@ -2104,7 +2104,7 @@
       "checksum": "5307d0bedbe0ccafcb65a47fe65fa451"
     },
     "R/db_utils.R": {
-      "checksum": "6c20ebdeb55aa9853dd9575895779dc4"
+      "checksum": "b9ed836aca4a059130597a1987e31f44"
     },
     "R/golem_utils_server.R": {
       "checksum": "c2998ee5dbb57c9af79904bc79133f74"
