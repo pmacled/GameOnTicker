@@ -65,16 +65,16 @@
         "RemoteRepo": "GameOnTicker",
         "RemoteUsername": "pmacled",
         "RemoteRef": "HEAD",
-        "RemoteSha": "3ec75b970a8036175ce5be691fbbf2bd3f00c60f",
+        "RemoteSha": "fdd9293adac8b969a31aa42fec47b3f766d20490",
         "GithubRepo": "GameOnTicker",
         "GithubUsername": "pmacled",
         "GithubRef": "HEAD",
-        "GithubSHA1": "3ec75b970a8036175ce5be691fbbf2bd3f00c60f",
+        "GithubSHA1": "fdd9293adac8b969a31aa42fec47b3f766d20490",
         "NeedsCompilation": "no",
-        "Packaged": "2025-10-26 12:48:02 UTC; nashd",
+        "Packaged": "2025-10-27 13:44:23 UTC; nashd",
         "Author": "Nash Delcamp [aut, cre]",
         "Maintainer": "Nash Delcamp <nash.delcamp@gmail.com>",
-        "Built": "R 4.4.2; ; 2025-10-26 12:48:02 UTC; windows"
+        "Built": "R 4.4.2; ; 2025-10-27 13:44:23 UTC; windows"
       }
     },
     "R6": {
@@ -2065,13 +2065,13 @@
   },
   "files": {
     ".github/prompts/game-on-ticker.prompt.md": {
-      "checksum": "4499250ce84bb0fc0e9027783777a062"
+      "checksum": "f99384eecac6c7b73132fe5374a47746"
     },
     ".Rbuildignore": {
       "checksum": "abfa00a5cf29aa1d109a2f7a2b20092f"
     },
     ".Renviron": {
-      "checksum": "3d8b805dd6e570bf171051954baaafe2"
+      "checksum": "49ed64362f2b1ca7fb75fdc8b1e3befb"
     },
     "app.R": {
       "checksum": "220069a618c62a7ff734ff7d66739e92"
@@ -2089,7 +2089,7 @@
       "checksum": "619e09c3514536387d445d05fc823889"
     },
     "NAMESPACE": {
-      "checksum": "ec124c8adfd88c53d804a7c3a54301e1"
+      "checksum": "4fe28e7bf416992046b2bc65b4b3d673"
     },
     "R/_disable_autoload.R": {
       "checksum": "9d8f7f20e88b559c046ec1f59fe82cba"
@@ -2098,13 +2098,13 @@
       "checksum": "694bee72679e3df13bbfcf4e055ecc31"
     },
     "R/app_server.R": {
-      "checksum": "4f13e2547ec5431e3fa180c7183100e4"
+      "checksum": "3ded798b0c0372f51e838841251bb583"
     },
     "R/app_ui.R": {
-      "checksum": "552adb84482353005909c42185dcea85"
+      "checksum": "5307d0bedbe0ccafcb65a47fe65fa451"
     },
     "R/db_utils.R": {
-      "checksum": "d8628e20196a1ef1c50638670931d8cd"
+      "checksum": "6c20ebdeb55aa9853dd9575895779dc4"
     },
     "R/golem_utils_server.R": {
       "checksum": "c2998ee5dbb57c9af79904bc79133f74"
@@ -2112,14 +2112,11 @@
     "R/golem_utils_ui.R": {
       "checksum": "1694775e681b1a4cf1ce4d2dda7e0316"
     },
-    "R/mod_data_controls.R": {
-      "checksum": "f82e54f11c99b3858b084546f2e4e5c5"
-    },
     "R/mod_play_by_play_view.R": {
-      "checksum": "bc6141976a50f8c0468a282b75634c61"
+      "checksum": "057537dfd7bbc743a5bc67be60315b5a"
     },
     "R/mod_referee_controls.R": {
-      "checksum": "61ed72828549fa6e550674e5d5f87c41"
+      "checksum": "c93b1ad7c992fd43d550c904d8525d12"
     },
     "R/run_app.R": {
       "checksum": "4d19509f058abc65cfd23c7353a7c94c"
