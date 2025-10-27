@@ -635,6 +635,7 @@ mod_referee_controls_server <- function(id, db_conn, game_id) {
       if (!(new_secs_total >= 0 && new_secs_total <= 25 * 60)) {
         showNotification("Set a timer up to 25 minutes long.", type = "error")
       } else {
+        record_event("edit_clock")
         clock_ms_rv(new_secs_total * 1000)
         removeModal()
       }
