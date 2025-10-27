@@ -87,37 +87,37 @@ mod_referee_controls_server <- function(id, db_conn, game_id) {
     call_event_rv <- reactiveVal(FALSE)
 
     # Initialize game based on most recent logged record for the game_id in the events table
-    last_event <- DBI::dbGetQuery(
+    last_event_init <- DBI::dbGetQuery(
       db_conn,
       "SELECT * FROM football_event WHERE game_id = $1 ORDER BY id DESC LIMIT 1",
       params = list(game_id)
     )
 
-    if (nrow(last_event) == 1) {
+    if (nrow(last_event_init) == 1) {
       # TODO handle halftime & end of game better
-      if (last_event$half == 1) {
+      if (last_event_init$half == 1) {
         timer_mode("first_half")
-      } else if (last_event$half == 2) {
+      } else if (last_event_init$half == 2) {
         timer_mode("second_half")
       }
 
-      clock_ms_rv(last_event$clock_ms)
+      clock_ms_rv(last_event_init$clock_ms)
 
       # first set to last state recorded, then re-play the last
       # event without recording it.
-      down_rv(last_event$down)
-      girl_plays_rv(last_event$girl_plays)
+      down_rv(last_event_init$down)
+      girl_plays_rv(last_event_init$girl_plays)
 
-      score_home_rv(last_event$score_home)
-      score_away_rv(last_event$score_away)
+      score_home_rv(last_event_init$score_home)
+      score_away_rv(last_event_init$score_away)
 
-      possession_rv(last_event$possession)
+      possession_rv(last_event_init$possession)
 
-      timeouts_home_rv(last_event$timeouts_home)
-      timeouts_away_rv(last_event$timeouts_away)
+      timeouts_home_rv(last_event_init$timeouts_home)
+      timeouts_away_rv(last_event_init$timeouts_away)
 
       # replay the event without recording
-      call_event_rv(last_event$event_type)
+      call_event_rv(last_event_init$event_type)
     }
 
     observe({
