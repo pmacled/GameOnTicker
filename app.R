@@ -2,6 +2,8 @@
 # To deploy, run: rsconnect::deployApp()
 # Or use the blue button on top of this file
 
+# rsconnect::writeManifest(appFiles = "app.R")
+
 options("golem.app.prod" = TRUE)
 if (interactive()) {
   pkgload::load_all(
