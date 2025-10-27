@@ -30,7 +30,7 @@ mod_play_by_play_view_server <- function(id, db_conn, game_id) {
       sprintf("%02d:%02d", mins, secs)
     }
 
-    # Helper: Map event_type to label
+    # Helper: Map event type to label
     event_type_label <- function(type) {
       dplyr::case_when(
         type == "guy_play" ~ "Guy Play",
@@ -61,15 +61,15 @@ mod_play_by_play_view_server <- function(id, db_conn, game_id) {
       events <- DBI::dbGetQuery(
         db_conn,
         "SELECT e.*, 
-            g.home_team, g.away_team,
-            th.team_name AS home_team_name,
-            ta.team_name AS away_team_name
-     FROM events e
-     LEFT JOIN games g ON e.game_id = g.game_id
-     LEFT JOIN teams th ON g.home_team = th.team_id
-     LEFT JOIN teams ta ON g.away_team = ta.team_id
-     WHERE e.game_id = $1
-     ORDER BY e.event_id ASC",
+          g.home_team_id, g.away_team_id,
+          th.name AS home_team_name,
+          ta.name AS away_team_name
+   FROM football_event e
+   LEFT JOIN game g ON e.game_id = g.id
+   LEFT JOIN team th ON g.home_team_id = th.id
+   LEFT JOIN team ta ON g.away_team_id = ta.id
+   WHERE e.game_id = $1
+   ORDER BY e.id ASC",
         params = list(game_id)
       )
       if (nrow(events) == 0) {
@@ -79,13 +79,13 @@ mod_play_by_play_view_server <- function(id, db_conn, game_id) {
       # Team for event (possession or defense)
       events$team <- dplyr::case_when(
         # timeouts
-        grepl("home", events$event_type) ~ events$home_team,
-        grepl("away", events$event_type) ~ events$away_team,
+        grepl("home", events$type) ~ events$home_team,
+        grepl("away", events$type) ~ events$away_team,
         # defensive plays
-        grepl("def|safety|turnover", events$event_type) &
+        grepl("def|safety|turnover", events$type) &
           events$possession == "Home" ~
           events$away_team,
-        grepl("def|safety|turnover", events$event_type) &
+        grepl("def|safety|turnover", events$type) &
           events$possession == "Away" ~
           events$home_team,
         # remaining plays (offense)
@@ -100,8 +100,8 @@ mod_play_by_play_view_server <- function(id, db_conn, game_id) {
         TRUE ~ NA_character_
       )
       # Event description
-      events$desc <- event_type_label(events$event_type)
-      events$clock_str <- format_clock(events$clock)
+      events$desc <- event_type_label(events$type)
+      events$clock_str <- format_clock(events$clock_ms)
       events <- events[!is.na(events$desc), ]
       if (nrow(events) == 0) {
         return(NULL)

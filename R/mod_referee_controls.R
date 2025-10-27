@@ -50,7 +50,7 @@ mod_referee_controls_server <- function(id, db_conn, game_id) {
     # validate that the game_id is in the games table
     game <- DBI::dbGetQuery(
       db_conn,
-      "SELECT * FROM games WHERE game_id = $1 LIMIT 1",
+      "SELECT * FROM game WHERE id = $1 LIMIT 1",
       params = list(game_id)
     )
     if (nrow(game) == 0) {
@@ -89,7 +89,7 @@ mod_referee_controls_server <- function(id, db_conn, game_id) {
     # Initialize game based on most recent logged record for the game_id in the events table
     last_event <- DBI::dbGetQuery(
       db_conn,
-      "SELECT * FROM events WHERE game_id = $1 ORDER BY event_id DESC LIMIT 1",
+      "SELECT * FROM football_event WHERE game_id = $1 ORDER BY id DESC LIMIT 1",
       params = list(game_id)
     )
 
@@ -101,7 +101,7 @@ mod_referee_controls_server <- function(id, db_conn, game_id) {
         timer_mode("second_half")
       }
 
-      clock_ms_rv(last_event$clock)
+      clock_ms_rv(last_event$clock_ms)
 
       # first set to last state recorded, then re-play the last
       # event without recording it.
@@ -168,8 +168,8 @@ mod_referee_controls_server <- function(id, db_conn, game_id) {
     record_event <- function(event_type) {
       DBI::dbExecute(
         db_conn,
-        "INSERT INTO events (game_id, half, clock, down, girl_plays, possession, score_home, score_away, timeouts_home, timeouts_away, event_type, event_points, scored_by)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)",
+        "INSERT INTO football_event (game_id, half, clock_ms, down, girl_plays, possession, score_home, score_away, timeouts_home, timeouts_away, type, event_points, scored_by)
+   VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)",
         params = list(
           game_id,
           switch(
@@ -876,15 +876,15 @@ mod_referee_controls_server <- function(id, db_conn, game_id) {
       # the event that will be deleted and the state we are restoring to
       last_event <- DBI::dbGetQuery(
         db_conn,
-        "SELECT * FROM events WHERE game_id = $1 ORDER BY event_id DESC LIMIT 1",
+        "SELECT * FROM football_event WHERE game_id = $1 ORDER BY id DESC LIMIT 1",
         params = list(game_id)
       )
       # Delete last event from database
       DBI::dbExecute(
         db_conn,
-        "DELETE FROM events WHERE event_id = (
-      SELECT event_id FROM events WHERE game_id = $1 ORDER BY event_id DESC LIMIT 1
-    )",
+        "DELETE FROM football_event WHERE id = (
+    SELECT id FROM football_event WHERE game_id = $1 ORDER BY id DESC LIMIT 1
+  )",
         params = list(game_id)
       )
       if (nrow(last_event) == 1) {
