@@ -47,90 +47,7 @@ mod_referee_controls_server <- function(id, db_conn, game_id) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
-    # validate that the game_id is in the games table
-    game <- DBI::dbGetQuery(
-      db_conn,
-      "SELECT * FROM game WHERE id = $1 LIMIT 1",
-      params = list(game_id)
-    )
-    if (nrow(game) == 0) {
-      showModal(modalDialog(
-        title = "Error",
-        sprintf("Game ID %s not found in games table.", game_id)
-      ))
-      return(NULL)
-    }
-
-    # reactive values
-    timer_mode <- reactiveVal("first_half") # "first_half", "halftime", "second_half", "ended"
-    clock_running_rv <- reactiveVal(FALSE)
-    clock_ms_rv <- reactiveVal(25 * 60 * 1000) # 25 minutes in ms
-    timer <- reactiveTimer(100, session) # triggers every 100 ms
-
-    play_clock_ms_rv <- reactiveVal(30 * 1000)
-    play_clock_running_rv <- reactiveVal(FALSE)
-    play_timer <- reactiveTimer(100, session)
-
-    down_rv <- reactiveVal(1)
-    girl_plays_rv <- reactiveVal(0)
-
-    score_home_rv <- reactiveVal(0)
-    score_away_rv <- reactiveVal(0)
-
-    possession_rv <- reactiveVal("Home")
-
-    timeouts_home_rv <- reactiveVal(3)
-    timeouts_away_rv <- reactiveVal(3)
-
-    # a reactive value that will be observed.
-    # intended for replaying the last event when reloading the app.
-    call_event_rv <- reactiveVal(FALSE)
-
-    # Initialize game based on most recent logged record for the game_id in the events table
-    last_event_init <- DBI::dbGetQuery(
-      db_conn,
-      "SELECT * FROM football_event WHERE game_id = $1 ORDER BY id DESC LIMIT 1",
-      params = list(game_id)
-    )
-
-    if (nrow(last_event_init) == 1) {
-      # TODO handle halftime & end of game better
-      if (last_event_init$half == 1) {
-        timer_mode("first_half")
-      } else if (last_event_init$half == 2) {
-        timer_mode("second_half")
-      }
-
-      clock_ms_rv(last_event_init$clock_ms)
-
-      # first set to last state recorded, then re-play the last
-      # event without recording it.
-      down_rv(last_event_init$down)
-      girl_plays_rv(last_event_init$girl_plays)
-
-      score_home_rv(last_event_init$score_home)
-      score_away_rv(last_event_init$score_away)
-
-      possession_rv(last_event_init$possession)
-
-      timeouts_home_rv(last_event_init$timeouts_home)
-      timeouts_away_rv(last_event_init$timeouts_away)
-
-      # replay the event without recording
-      call_event_rv(last_event_init$event_type)
-    }
-
-    observe({
-      if (is.character(call_event_rv())) {
-        if (exists(call_event_rv()) && !call_event_rv() %in% c("start_clock")) {
-          event_fn <- get(call_event_rv())
-          if (is.function(event_fn)) {
-            do.call(event_fn, args = list(record = FALSE))
-          }
-        }
-        call_event_rv(FALSE)
-      }
-    })
+    # functions ----
 
     get_event_points <- function(event_type) {
       switch(
@@ -200,14 +117,14 @@ mod_referee_controls_server <- function(id, db_conn, game_id) {
     }
 
     stop_clock <- function(record = TRUE) {
-      if (record) {
+      if (record && timer_mode() %in% c("first_half", "second_half")) {
         record_event("stop_clock")
       }
       clock_running_rv(FALSE)
     }
 
     start_clock <- function(record = TRUE) {
-      if (record) {
+      if (record && timer_mode() %in% c("first_half", "second_half")) {
         record_event("start_clock")
       }
       clock_running_rv(TRUE)
@@ -453,7 +370,7 @@ mod_referee_controls_server <- function(id, db_conn, game_id) {
         sprintf(
           "%s team called a timeout. %d remaining.",
           team,
-          timeouts_remaining
+          as.integer(timeouts_remaining)
         )
       ))
     }
@@ -483,6 +400,7 @@ mod_referee_controls_server <- function(id, db_conn, game_id) {
       if (record) {
         record_event("start_second_half")
       }
+      clock_running_rv(FALSE)
       timer_mode("second_half")
       clock_ms_rv(25 * 60 * 1000)
       change_possession()
@@ -499,6 +417,98 @@ mod_referee_controls_server <- function(id, db_conn, game_id) {
         "Game ended."
       ))
     }
+
+    # initialization ----
+
+    # validate that the game_id is in the games table
+    game <- DBI::dbGetQuery(
+      db_conn,
+      "SELECT * FROM game WHERE id = $1 LIMIT 1",
+      params = list(game_id)
+    )
+    if (nrow(game) == 0) {
+      showModal(modalDialog(
+        title = "Error",
+        sprintf("Game ID %s not found in games table.", game_id)
+      ))
+      return(NULL)
+    }
+
+    # reactive values
+    timer_mode <- reactiveVal("first_half") # "first_half", "halftime", "second_half", "ended"
+    clock_running_rv <- reactiveVal(FALSE)
+    clock_ms_rv <- reactiveVal(25 * 60 * 1000) # 25 minutes in ms
+    timer <- reactiveTimer(100, session) # triggers every 100 ms
+
+    play_clock_ms_rv <- reactiveVal(30 * 1000)
+    play_clock_running_rv <- reactiveVal(FALSE)
+    play_timer <- reactiveTimer(100, session)
+
+    down_rv <- reactiveVal(1)
+    girl_plays_rv <- reactiveVal(0)
+
+    score_home_rv <- reactiveVal(0)
+    score_away_rv <- reactiveVal(0)
+
+    possession_rv <- reactiveVal("Home")
+
+    timeouts_home_rv <- reactiveVal(3)
+    timeouts_away_rv <- reactiveVal(3)
+
+    # a reactive value that will be observed.
+    # intended for replaying the last event when reloading the app.
+    call_event_rv <- reactiveVal(FALSE)
+
+    # Initialize game based on most recent logged record for the game_id in the events table
+    last_event_init <- DBI::dbGetQuery(
+      db_conn,
+      "SELECT * FROM football_event WHERE game_id = $1 ORDER BY id DESC LIMIT 1",
+      params = list(game_id)
+    )
+
+    if (nrow(last_event_init) == 1) {
+      if (last_event_init$half == 1) {
+        timer_mode("first_half")
+      } else if (last_event_init$half == 2) {
+        timer_mode("second_half")
+      }
+
+      clock_ms_rv(last_event_init$clock_ms)
+
+      # first set to last state recorded, then re-play the last
+      # event without recording it.
+      down_rv(last_event_init$down)
+      girl_plays_rv(last_event_init$girl_plays)
+
+      score_home_rv(last_event_init$score_home)
+      score_away_rv(last_event_init$score_away)
+
+      possession_rv(last_event_init$possession)
+
+      timeouts_home_rv(last_event_init$timeouts_home)
+      timeouts_away_rv(last_event_init$timeouts_away)
+
+      # replay the event without recording
+      call_event_rv(last_event_init$type)
+    }
+
+    observe({
+      if (is.character(call_event_rv())) {
+        if (call_event_rv() == "first_half_clock_expired") {
+          halftime(record = FALSE)
+        } else if (call_event_rv() == "second_half_clock_expired") {
+          end_game(record = FALSE)
+        } else if (
+          exists(call_event_rv()) && !call_event_rv() %in% c("start_clock")
+        ) {
+          event_fn <- get(call_event_rv())
+          if (is.function(event_fn)) {
+            do.call(event_fn, args = list(record = FALSE))
+          }
+        }
+        call_event_rv(FALSE)
+      }
+    })
 
     # game clock
     observe({
@@ -573,7 +583,12 @@ mod_referee_controls_server <- function(id, db_conn, game_id) {
         "second_half" = "2nd Half",
         "ended" = "Game Ended"
       )
-      tags$h2(sprintf("%02d:%02d (%s)", mins, secs, label))
+      tags$h2(sprintf(
+        "%02d:%02d (%s)",
+        as.integer(mins),
+        as.integer(secs),
+        label
+      ))
     })
 
     observeEvent(input$start_pause, {
@@ -666,7 +681,7 @@ mod_referee_controls_server <- function(id, db_conn, game_id) {
     output$play_clock_display <- renderUI({
       secs <- play_clock_ms_rv() %/% 1000
       style <- if (secs == 0) "color:red;font-weight:bold;" else ""
-      tags$h2(style = style, sprintf("%02d", secs))
+      tags$h2(style = style, sprintf("%02d", as.integer(secs)))
     })
 
     # Button logic
@@ -689,15 +704,19 @@ mod_referee_controls_server <- function(id, db_conn, game_id) {
 
     # UI output for score
     output$score_display <- renderUI({
-      tags$h4(sprintf("Home: %d Away: %d", score_home_rv(), score_away_rv()))
+      tags$h4(sprintf(
+        "Home: %d Away: %d",
+        as.integer(score_home_rv()),
+        as.integer(score_away_rv())
+      ))
     })
 
     # UI output for timeouts
     output$timeout_display <- renderUI({
       tags$h4(sprintf(
         "Timeouts: Home: %d Away: %d",
-        timeouts_home_rv(),
-        timeouts_away_rv()
+        as.integer(timeouts_home_rv()),
+        as.integer(timeouts_away_rv())
       ))
     })
 
@@ -726,7 +745,7 @@ mod_referee_controls_server <- function(id, db_conn, game_id) {
             sprintf(
               "%s and %d",
               down_names[down_rv()],
-              2 - min(girl_plays_rv(), 2)
+              2 - min(as.integer(girl_plays_rv()), 2)
             )
           )
         )
