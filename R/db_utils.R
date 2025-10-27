@@ -14,6 +14,6 @@ gameon_db_connect <- function(
     dbname = dbname,
     user = user,
     password = password,
-    sslmode = "require"
+    sslmode = sslmode
   )
 }
