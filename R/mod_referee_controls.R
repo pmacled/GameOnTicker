@@ -168,7 +168,7 @@ mod_referee_controls_server <- function(id, db_conn, game_id) {
     record_event <- function(event_type) {
       DBI::dbExecute(
         db_conn,
-        "INSERT INTO football_event (game_id, half, clock_ms, down, girl_plays, possession, score_home, score_away, timeouts_home, timeouts_away, type, event_points, scored_by)
+        "INSERT INTO football_event (game_id, half, clock_ms, down, girl_plays, possession, score_home, score_away, timeouts_home, timeouts_away, type, points, scored_by)
    VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)",
         params = list(
           game_id,
