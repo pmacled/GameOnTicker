@@ -98,14 +98,14 @@ mod_ticker_server <- function(id, game_data, game_clock, play_clock) {
     output$record_away <- renderText(get_val("record_away"))
     output$score_home <- renderText({
       if (isTRUE(get_val("possession") == "Home")) {
-        paste(get_val("score_home"), "🞀")
+        paste(get_val("score_home"), "\u25C2")
       } else {
         get_val("score_home")
       }
     })
     output$score_away <- renderText({
       if (isTRUE(get_val("possession") == "Away")) {
-        paste("🞂", get_val("score_away"))
+        paste("\u25B8", get_val("score_away"))
       } else {
         get_val("score_away")
       }
