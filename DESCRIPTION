@@ -6,12 +6,12 @@ Authors@R:
 Description: Roles for administrators, referees, and viewers. Referees manage the game while tracking scoring events. Players and fans keep tabs on games in real time.
 License: MIT + file LICENSE
 Imports: 
+    bslib,
     config,
     DBI,
     dplyr,
     golem,
     pkgload,
-    rhandsontable,
     RPostgres,
     shiny
 Encoding: UTF-8
