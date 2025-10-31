@@ -13,9 +13,9 @@ mod_referee_controls_ui <- function(id) {
   ns <- NS(id)
   tagList(
     h3("Referee Controls"),
-    mod_ticker_ui(ns("ticker")),
     div(
       style = "display: flex; flex-direction: column; gap: 8px; align-items: center;",
+      mod_ticker_ui(ns("ticker")),
       actionButton(ns("undo_event"), "Undo Last Event"),
       div(
         style = "display: flex; gap: 8px;",
