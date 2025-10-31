@@ -1,0 +1,265 @@
+.ticker-bar {
+  background: var(--bs-body-bg);
+  color: var(--bs-body-color);
+  border-radius: 12px;
+  box-shadow: none;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  font-size: 1em;
+  padding: 8px 24px;
+  max-width: 640px;
+  min-width: 320px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.ticker-top-row {
+  display: flex;
+  width: 100%;
+  align-items: stretch;
+}
+
+.ticker-left-logo {
+  flex: 0 0 10%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  overflow: hidden;
+}
+
+.ticker-left-info {
+  flex: 0 0 27%;
+  min-width: 0;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-end;
+  padding-right: 8px;
+  text-align: right;
+}
+
+.ticker-left-info .team-timeouts {
+  justify-content: flex-end;
+}
+
+.ticker-left-score {
+  flex: 0 0 13%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.7em;
+  font-weight: 700;
+  color: var(--bs-body-color);
+  min-width: 40px;
+}
+
+.ticker-center-spacer {
+  flex: 0 0 0%;
+}
+
+.ticker-right-score {
+  flex: 0 0 13%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.7em;
+  font-weight: 700;
+  color: var(--bs-body-color);
+  min-width: 40px;
+}
+
+.ticker-right-info {
+  flex: 0 0 27%;
+  min-width: 0;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  padding-left: 8px;
+  text-align: left;
+}
+
+.ticker-right-info .team-timeouts {
+  justify-content: flex-start;
+}
+
+.ticker-right-logo {
+  flex: 0 0 10%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  overflow: hidden;
+}
+
+.ticker-bottom-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-top: 2px;
+  margin-bottom: 2px;
+  font-size: 1.12em;
+  font-weight: 500;
+}
+
+.ticker-bottom-left {
+  display: flex;
+  flex: 0 0 auto;
+  width: 48%;
+  gap: 28px;
+  justify-content: flex-end;
+}
+
+.ticker-bottom-right {
+  display: flex;
+  flex: 0 0 auto;
+  width: 48%;
+  gap: 28px;
+  justify-content: flex-start;
+}
+
+/* parts */
+.team-name {
+  width: 100%;
+  font-size: 1em;
+  font-weight: 600;
+  color: var(--bs-body-color);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+.team-record {
+  font-size: 1em;
+  color: var(--bs-secondary);
+}
+
+.team-logo {
+  width: 48px;
+  height: 48px;
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  display: block;
+  margin: 0;
+  padding: 0;
+}
+
+.team-timeouts {
+  display: flex;
+  gap: 6px;
+  margin: 2px 0 4px 0;
+}
+
+.timeout-strip {
+  width: 20px;
+  height: 4px;
+  border-radius: 4px;
+  background: var(--bs-body-color);
+  opacity: 1;
+  transition: background 0.2s;
+}
+
+.timeout-used {
+  background: #bbb;
+  opacity: 0.7;
+}
+
+.timeout-unused {
+  background: var(--bs-body-color);
+  opacity: 1;
+}
+
+.game-half {
+  color: var(--bs-body-color);
+  font-weight: 600;
+  font-size: 1.06em;
+}
+
+.game-clock {
+  color: var(--bs-body-color);
+  font-weight: 600;
+  font-size: 1.06em;
+  align-content: flex-end;
+  min-width: 56px;
+  display: inline-block;
+  text-align: right;
+  letter-spacing: 1px;
+}
+
+.play-clock {
+  color: var(--bs-danger);
+  font-weight: 600;
+  font-size: 1.06em;
+  min-width: 56px;
+  display: inline-block;
+  text-align: left;
+  letter-spacing: 1px;
+}
+
+.down-girl-plays-available {
+  color: var(--bs-body-color);
+  font-weight: 500;
+  font-size: 1.06em;
+}
+
+/* Responsive for mobile */
+@media (max-width: 600px) {
+  .ticker-bar {
+    font-size: 1em;
+    padding: 6px 4px;
+    min-width: 0;
+  }
+  .ticker-top-row {
+    flex-direction: row;
+    align-items: center;
+  }
+  .ticker-left-logo,
+  .ticker-right-logo,
+  .ticker-left-score,
+  .ticker-right-score,
+  .ticker-center,
+  .ticker-left-info,
+  .ticker-right-info {
+    flex: 1 1 100%;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 2px 0;
+  }
+  .timeout-strip {
+    width: 12px;
+    height: 3px;
+  }
+  .team-logo {
+    width: 28px;
+    height: 28px;
+    margin: 0 2px;
+  }
+  .team-name {
+    font-size: 0.85em;
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .team-record {
+    font-size: 0.85em;
+  }
+  .ticker-left-score,
+  .ticker-right-score {
+    font-size: 1.2em;
+    min-width: 28px;
+  }
+  .game-half,
+  .game-clock,
+  .play-clock,
+  .down-girl-plays-available {
+    font-size: 0.92em;
+  }
+  .ticker-center-bottom {
+    gap: 6px;
+  }
+}

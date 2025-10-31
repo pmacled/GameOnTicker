@@ -9,14 +9,28 @@ app_ui <- function(request) {
     # Leave this function for adding external resources
     golem_add_external_resources(),
     # Your application UI logic
-    navbarPage(
-      "Game On! Ticker (alpha)",
-      tabPanel(
+    bslib::page_navbar(
+      title = "Game On! Ticker (alpha)",
+      bslib::nav_panel(
         "Referee Controls",
         mod_referee_controls_ui("referee_controls_1")
       ),
-      tabPanel("Play-by-Play", mod_play_by_play_view_ui("play_by_play_view_1"))
+      bslib::nav_panel(
+        "Play-by-Play",
+        mod_play_by_play_view_ui("play_by_play_view_1")
+      ),
       # TODO next module should probably be the game viewer/ticker.
+
+      bslib::nav_menu(
+        title = "Menu",
+        align = "right",
+        bslib::nav_item(
+          bslib::input_dark_mode(id = "dark_mode", mode = "light")
+          # TODO login
+        )
+      ),
+
+      theme = bslib::bs_theme(preset = "shiny")
     )
   )
 }
@@ -40,8 +54,9 @@ golem_add_external_resources <- function() {
     bundle_resources(
       path = app_sys("app/www"),
       app_title = "GameOnTicker"
-    )
+    ),
     # Add here other external resources
     # for example, you can add shinyalert::useShinyalert()
+    tags$link(rel = "stylesheet", type = "text/css", href = "www/ticker.css")
   )
 }

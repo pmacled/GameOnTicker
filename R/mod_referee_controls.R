@@ -13,30 +13,30 @@ mod_referee_controls_ui <- function(id) {
   ns <- NS(id)
   tagList(
     h3("Referee Controls"),
-    column(
-      12,
-      fluidRow(
-        uiOutput(ns("game_clock_display"))
+    mod_ticker_ui(ns("ticker")),
+    div(
+      style = "display: flex; flex-direction: column; gap: 8px; align-items: center;",
+      actionButton(ns("undo_event"), "Undo Last Event"),
+      div(
+        style = "display: flex; gap: 8px;",
+        actionButton(ns("start_pause"), "Start Clock", style = "width:180px;"),
+        actionButton(ns("edit_clock"), "Edit Clock", style = "width:180px;")
       ),
-      fluidRow(
-        actionButton(ns("start_pause"), "Start"),
-        actionButton(ns("edit_clock"), "Edit")
+      div(
+        style = "display: flex; gap: 8px;",
+        actionButton(
+          ns("start_pause_play_clock"),
+          "Start Play Clock",
+          style = "width:180px;"
+        ),
+        actionButton(
+          ns("reset_play_clock"),
+          "Reset Play Clock",
+          style = "width:180px;"
+        )
       ),
-      fluidRow(
-        uiOutput(ns("play_clock_display"))
-      ),
-      fluidRow(
-        actionButton(ns("start_pause_play_clock"), "Start Play Clock"),
-        actionButton(ns("reset_play_clock"), "Reset Play Clock")
-      )
-    ),
-    uiOutput(ns("down_and_girl")),
-    uiOutput(ns("possession")),
-    uiOutput(ns("score_display")),
-    uiOutput(ns("timeout_display")),
-    h4("Play-by-Play Events"),
-    uiOutput(ns("play_by_play_ui")),
-    actionButton(ns("undo_event"), "Undo Last Event")
+      uiOutput(ns("play_by_play_ui"))
+    )
   )
 }
 
@@ -448,6 +448,67 @@ mod_referee_controls_server <- function(id, db_conn, game_id) {
       return(NULL)
     }
 
+    # collect all game and team information
+    game_info <- DBI::dbGetQuery(
+      db_conn,
+      "
+  SELECT
+    g.id AS game_id,
+    g.home_team_id,
+    home_team.name AS home_name,
+    home_team.logo AS home_logo,
+    g.away_team_id,
+    away_team.name AS away_name,
+    away_team.logo AS away_logo,
+    g.division_id,
+    d.name AS division_name,
+    d.league_id,
+    l.name AS league_name,
+    l.season
+  FROM game g
+    LEFT JOIN team home_team ON g.home_team_id = home_team.id
+    LEFT JOIN team away_team ON g.away_team_id = away_team.id
+    LEFT JOIN division d ON g.division_id = d.id
+    LEFT JOIN league l ON d.league_id = l.id
+  WHERE g.id = $1
+  LIMIT 1
+  ",
+      params = list(game_id)
+    )
+
+    # one row per team with win/loss/tie counts for games in this
+    # division/season played up to this game.
+    team_records <- DBI::dbGetQuery(
+      db_conn,
+      "
+  SELECT
+    t.id AS team_id,
+    t.name AS team_name,
+    SUM(CASE
+      WHEN ((g.home_team_id = t.id AND g.score_home > g.score_away) OR
+            (g.away_team_id = t.id AND g.score_away > g.score_home))
+      THEN 1 ELSE 0 END) AS wins,
+    SUM(CASE
+      WHEN ((g.home_team_id = t.id AND g.score_home < g.score_away) OR
+            (g.away_team_id = t.id AND g.score_away < g.score_home))
+      THEN 1 ELSE 0 END) AS losses,
+    SUM(CASE
+      WHEN (g.score_home = g.score_away)
+      THEN 1 ELSE 0 END) AS ties
+  FROM team t
+    JOIN game g ON (g.home_team_id = t.id OR g.away_team_id = t.id)
+  WHERE g.division_id = $1
+    AND g.start_time < NOW()
+    AND (t.id = $2 OR t.id = $3)
+  GROUP BY t.id, t.name
+  ",
+      params = list(
+        game_info$division_id,
+        game_info$home_team_id,
+        game_info$away_team_id
+      )
+    )
+
     # reactive values
     timer_mode <- reactiveVal("first_half") # "first_half", "halftime", "second_half", "ended", "final"
     clock_running_rv <- reactiveVal(FALSE)
@@ -505,6 +566,96 @@ mod_referee_controls_server <- function(id, db_conn, game_id) {
       # replay the event without recording
       call_event_rv(last_event_init$type)
     }
+
+    ticker_game_data <- reactive({
+      half_label <- switch(
+        timer_mode(),
+        "first_half" = "1st Half",
+        "halftime" = "Halftime",
+        "second_half" = "2nd Half",
+        "ended" = "Game Ended",
+        "final" = "Final"
+      )
+
+      down_names <- c("1st", "2nd", "3rd", "4th", "5th", "6th")
+      down_girl_plays_available <-
+        if (is.na(down_rv())) {
+          # NA down means a touchdown was just scored
+          "PAT"
+        } else {
+          sprintf(
+            "%s and %d",
+            down_names[as.integer(down_rv())],
+            2 - min(as.integer(girl_plays_rv()), 2)
+          )
+        }
+
+      format_record <- function(wins, losses, ties) {
+        if (ties > 0) {
+          sprintf(
+            "%d-%d-%d",
+            as.integer(wins),
+            as.integer(losses),
+            as.integer(ties)
+          )
+        } else {
+          sprintf("%d-%d", as.integer(wins), as.integer(losses))
+        }
+      }
+
+      record_home <- with(
+        team_records[
+          team_records$team_id == game_info$home_team_id,
+        ],
+        format_record(wins, losses, ties)
+      )
+      record_away <- with(
+        team_records[
+          team_records$team_id == game_info$away_team_id,
+        ],
+        format_record(wins, losses, ties)
+      )
+
+      list(
+        home_logo = game_info$home_logo,
+        away_logo = game_info$away_logo,
+        home_name = game_info$home_name,
+        away_name = game_info$away_name,
+        record_home = record_home,
+        record_away = record_away,
+        timeouts_home = as.integer(timeouts_home_rv()),
+        timeouts_away = as.integer(timeouts_away_rv()),
+        score_home = as.integer(score_home_rv()),
+        score_away = as.integer(score_away_rv()),
+        possession = possession_rv(),
+        half = half_label,
+        down_girl_plays_available = down_girl_plays_available
+      )
+    })
+
+    ticker_game_clock <- reactive({
+      mins <- clock_ms_rv() %/% 60000
+      secs <- clock_ms_rv() %% 60000 %/% 1000
+      sprintf(
+        "%02d:%02d",
+        as.integer(mins),
+        as.integer(secs)
+      )
+    })
+
+    ticker_play_clock <- reactive({
+      secs <- play_clock_ms_rv() %/% 1000
+      sprintf("%02d", as.integer(secs))
+    })
+
+    mod_ticker_server(
+      "ticker",
+      game_data = ticker_game_data,
+      game_clock = ticker_game_clock,
+      play_clock = ticker_play_clock
+    )
+
+    # observers ----
 
     observe({
       if (is.character(call_event_rv())) {
@@ -591,25 +742,6 @@ mod_referee_controls_server <- function(id, db_conn, game_id) {
       finalize_game()
     })
 
-    output$game_clock_display <- renderUI({
-      mins <- clock_ms_rv() %/% 60000
-      secs <- clock_ms_rv() %% 60000 %/% 1000
-      label <- switch(
-        timer_mode(),
-        "first_half" = "1st Half",
-        "halftime" = "Halftime",
-        "second_half" = "2nd Half",
-        "ended" = "Game Ended",
-        "final" = "Final"
-      )
-      tags$h2(sprintf(
-        "%02d:%02d (%s)",
-        as.integer(mins),
-        as.integer(secs),
-        label
-      ))
-    })
-
     observeEvent(input$start_pause, {
       if (clock_running_rv()) {
         stop_clock()
@@ -619,7 +751,7 @@ mod_referee_controls_server <- function(id, db_conn, game_id) {
       updateActionButton(
         session,
         "start_pause",
-        label = if (clock_running_rv()) "Pause" else "Start"
+        label = if (clock_running_rv()) "Pause Clock" else "Start Clock"
       )
     })
 
@@ -627,7 +759,7 @@ mod_referee_controls_server <- function(id, db_conn, game_id) {
       updateActionButton(
         session,
         "start_pause",
-        label = if (clock_running_rv()) "Pause" else "Start"
+        label = if (clock_running_rv()) "Pause Clock" else "Start Clock"
       )
     })
 
@@ -696,13 +828,6 @@ mod_referee_controls_server <- function(id, db_conn, game_id) {
       }
     })
 
-    # UI for play clock
-    output$play_clock_display <- renderUI({
-      secs <- play_clock_ms_rv() %/% 1000
-      style <- if (secs == 0) "color:red;font-weight:bold;" else ""
-      tags$h2(style = style, sprintf("%02d", as.integer(secs)))
-    })
-
     # Button logic
     observe({
       label <- if (play_clock_running_rv()) {
@@ -719,152 +844,6 @@ mod_referee_controls_server <- function(id, db_conn, game_id) {
 
     observeEvent(input$reset_play_clock, {
       reset_play_clock()
-    })
-
-    # UI output for score
-    output$score_display <- renderUI({
-      tags$h4(sprintf(
-        "Home: %d Away: %d",
-        as.integer(score_home_rv()),
-        as.integer(score_away_rv())
-      ))
-    })
-
-    # UI output for timeouts
-    output$timeout_display <- renderUI({
-      tags$h4(sprintf(
-        "Timeouts: Home: %d Away: %d",
-        as.integer(timeouts_home_rv()),
-        as.integer(timeouts_away_rv())
-      ))
-    })
-
-    # UI output for possession
-    output$possession <- renderUI({
-      tagList(
-        tags$h4(
-          paste("Possession:", possession_rv())
-        )
-      )
-    })
-
-    # UI output for down and girl plays
-    output$down_and_girl <- renderUI({
-      down_names <- c("1st", "2nd", "3rd", "4th", "5th", "6th")
-      if (is.na(down_rv())) {
-        # NA down means a touchdown was just scored
-        tagList(
-          tags$h4(
-            "PAT"
-          )
-        )
-      } else {
-        tagList(
-          tags$h4(
-            sprintf(
-              "%s and %d",
-              down_names[down_rv()],
-              2 - min(as.integer(girl_plays_rv()), 2)
-            )
-          )
-        )
-      }
-    })
-
-    # UI output for play-by-play events
-    output$play_by_play_ui <- renderUI({
-      halftime_button <- actionButton(
-        ns("start_second_half"),
-        "Start Second Half"
-      )
-
-      finalize_game_button <- actionButton(
-        ns("finalize_game"),
-        "Finalize Game"
-      )
-
-      tagList(
-        # call timeouts
-        actionButton(ns("timeout_home"), "Home Timeout"),
-        actionButton(ns("timeout_away"), "Away Timeout"),
-        if (timer_mode() == "final") {
-          NULL
-        } else if (is.na(down_rv())) {
-          # PAT options
-          column(
-            12,
-            if (timer_mode() == "halftime") halftime_button,
-            if (timer_mode() == "ended") finalize_game_button,
-            fluidRow(tags$strong("Offense")),
-            fluidRow(
-              tags$div(
-                actionButton(ns("pat1_good"), "1-pt Good"),
-                actionButton(ns("pat1_miss"), "1-pt Miss")
-              )
-            ),
-            fluidRow(
-              tags$div(
-                actionButton(ns("pat2_good"), "2-pt Good"),
-                actionButton(ns("pat2_miss"), "2-pt Miss")
-              )
-            ),
-            fluidRow(
-              tags$div(
-                actionButton(ns("pat3_good"), "3-pt Good"),
-                actionButton(ns("pat3_miss"), "3-pt Miss")
-              )
-            ),
-            fluidRow(tags$strong("Defense")),
-            fluidRow(
-              tags$div(
-                actionButton(ns("pat_def"), "Defensive Return")
-              )
-            )
-          )
-        } else {
-          # Regular play options
-          column(
-            12,
-            if (timer_mode() == "halftime") halftime_button,
-            if (timer_mode() == "ended") finalize_game_button,
-            fluidRow(tags$strong("Offense")),
-            fluidRow(
-              tags$div(
-                actionButton(ns("guy_play"), "Guy Play"),
-                actionButton(ns("girl_play"), "Girl Play")
-              )
-            ),
-            fluidRow(
-              tags$div(
-                actionButton(ns("guy_td"), "Guy Touchdown"),
-                actionButton(ns("girl_td"), "Girl Touchdown")
-              )
-            ),
-            fluidRow(
-              tags$div(
-                actionButton(
-                  ns("punt"),
-                  "Punt",
-                  disabled = !(down_rv() < 6 && girl_plays_rv() > 0)
-                )
-              )
-            ),
-            fluidRow(tags$strong("Defense")),
-            fluidRow(
-              tags$div(
-                actionButton(ns("turnover"), "Turnover"),
-                actionButton(ns("safety"), "Safety")
-              )
-            ),
-            fluidRow(
-              tags$div(
-                actionButton(ns("guy_td_def"), "Guy Touchdown (Defensive)"),
-                actionButton(ns("girl_td_def"), "Girl Touchdown (Defensive)")
-              )
-            )
-          )
-        }
-      )
     })
 
     observeEvent(input$timeout_home, {
@@ -959,6 +938,165 @@ mod_referee_controls_server <- function(id, db_conn, game_id) {
         timeouts_home_rv(3)
         timeouts_away_rv(3)
       }
+    })
+
+    # renderers ----
+    # UI output for play-by-play events
+    output$play_by_play_ui <- renderUI({
+      halftime_button <- actionButton(
+        ns("start_second_half"),
+        "Start Second Half"
+      )
+
+      finalize_game_button <- actionButton(
+        ns("finalize_game"),
+        "Finalize Game"
+      )
+
+      tagList(
+        div(
+          style = "display: flex; flex-direction: column; gap: 8px; align-items: center;",
+          # call timeouts
+          div(
+            style = "display: flex; gap: 8px;",
+            actionButton(
+              ns("timeout_home"),
+              "Home Timeout",
+              style = "width:180px;"
+            ),
+            actionButton(
+              ns("timeout_away"),
+              "Away Timeout",
+              style = "width:180px;"
+            )
+          ),
+          if (timer_mode() == "final") {
+            NULL
+          } else if (is.na(down_rv())) {
+            # PAT options
+            div(
+              style = "display: flex; flex-direction: column; gap: 8px; align-items: center;",
+              if (timer_mode() == "halftime") halftime_button,
+              if (timer_mode() == "ended") finalize_game_button,
+              div(tags$strong("Offense")),
+              div(
+                style = "display: flex; gap: 8px;",
+                actionButton(
+                  ns("pat1_good"),
+                  "1-pt Good",
+                  style = "width:180px;"
+                ),
+                actionButton(
+                  ns("pat1_miss"),
+                  "1-pt Miss",
+                  style = "width:180px;"
+                )
+              ),
+              div(
+                style = "display: flex; gap: 8px;",
+                actionButton(
+                  ns("pat2_good"),
+                  "2-pt Good",
+                  style = "width:180px;"
+                ),
+                actionButton(
+                  ns("pat2_miss"),
+                  "2-pt Miss",
+                  style = "width:180px;"
+                )
+              ),
+              div(
+                style = "display: flex; gap: 8px;",
+                actionButton(
+                  ns("pat3_good"),
+                  "3-pt Good",
+                  style = "width:180px;"
+                ),
+                actionButton(
+                  ns("pat3_miss"),
+                  "3-pt Miss",
+                  style = "width:180px;"
+                )
+              ),
+              div(tags$strong("Defense")),
+              div(
+                style = "display: flex; gap: 8px;",
+                actionButton(
+                  ns("pat_def"),
+                  "Defensive Return",
+                  style = "width:180px;"
+                )
+              )
+            )
+          } else {
+            # Regular play options
+            div(
+              style = "display: flex; flex-direction: column; gap: 8px; align-items: center;",
+              if (timer_mode() == "halftime") halftime_button,
+              if (timer_mode() == "ended") finalize_game_button,
+              div(tags$strong("Offense")),
+              div(
+                style = "display: flex; gap: 8px;",
+                actionButton(
+                  ns("guy_play"),
+                  "Guy Play",
+                  style = "width:180px;"
+                ),
+                actionButton(
+                  ns("girl_play"),
+                  "Girl Play",
+                  style = "width:180px;"
+                )
+              ),
+              div(
+                style = "display: flex; gap: 8px;",
+                actionButton(
+                  ns("guy_td"),
+                  "Guy TD",
+                  style = "width:180px;"
+                ),
+                actionButton(
+                  ns("girl_td"),
+                  "Girl TD",
+                  style = "width:180px;"
+                )
+              ),
+              div(
+                style = "display: flex; gap: 8px;",
+                actionButton(
+                  ns("punt"),
+                  "Punt",
+                  disabled = !(down_rv() < 6 && girl_plays_rv() > 0),
+                  style = "width:180px;"
+                )
+              ),
+              div(tags$strong("Defense")),
+              div(
+                style = "display: flex; gap: 8px;",
+                actionButton(
+                  ns("turnover"),
+                  "Turnover",
+                  style = "width:180px;"
+                ),
+                actionButton(ns("safety"), "Safety", style = "width:180px;")
+              ),
+              div(
+                style = "display: flex; gap: 8px;",
+                actionButton(
+                  ns("guy_td_def"),
+                  "Guy TD (Def)",
+                  style = "width:180px;"
+                ),
+                actionButton(
+                  ns("girl_td_def"),
+                  "Girl TD (Def)",
+                  style = "width:180px;"
+                )
+              )
+            )
+          }
+        )
+      )
     })
   })
 }
