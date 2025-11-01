@@ -10,7 +10,10 @@ app_ui <- function(request) {
     golem_add_external_resources(),
     # Your application UI logic
     bslib::page_navbar(
-      title = "Game On! Ticker (alpha)",
+      title = tagList(
+        "Game On! Ticker (alpha)",
+        bslib::input_dark_mode(id = "dark_mode", mode = "light")
+      ),
       bslib::nav_panel(
         "Referee Controls",
         mod_referee_controls_ui("referee_controls_1")
@@ -19,17 +22,10 @@ app_ui <- function(request) {
         "Play-by-Play",
         mod_play_by_play_view_ui("play_by_play_view_1")
       ),
-      # TODO next module should probably be the game viewer/ticker.
-
-      bslib::nav_menu(
-        title = "Menu",
-        align = "right",
-        bslib::nav_item(
-          bslib::input_dark_mode(id = "dark_mode", mode = "light")
-          # TODO login
-        )
+      bslib::nav_item(
+        login_status_ui("login_1"),
       ),
-
+      # TODO next module should probably be the game viewer/ticker.
       theme = bslib::bs_theme(preset = "shiny")
     )
   )
