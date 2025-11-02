@@ -20,5 +20,4 @@ app_server <- function(input, output, session) {
     game_id = 170,
     user_rv = user_rv
   )
-  mod_play_by_play_view_server("play_by_play_view_1", db_conn, game_id = 170)
 }

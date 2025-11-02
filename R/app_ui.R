@@ -18,10 +18,6 @@ app_ui <- function(request) {
         "Referee Controls",
         mod_referee_controls_ui("referee_controls_1")
       ),
-      bslib::nav_panel(
-        "Play-by-Play",
-        mod_play_by_play_view_ui("play_by_play_view_1")
-      ),
       bslib::nav_item(
         login_status_ui("login_1"),
       ),

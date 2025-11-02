@@ -15,8 +15,9 @@ mod_referee_controls_ui <- function(id) {
     div(
       style = "display: flex; flex-direction: column; gap: 8px; align-items: center;",
       mod_ticker_ui(ns("ticker")),
-      uiOutput(ns("play_by_play_ui"))
-    )
+      uiOutput(ns("controls_ui"))
+    ),
+    mod_play_by_play_view_ui(ns("play_by_play_view"))
   )
 }
 
@@ -754,6 +755,8 @@ mod_referee_controls_server <- function(id, db_conn, game_id, user_rv) {
       play_clock = ticker_play_clock
     )
 
+    mod_play_by_play_view_server("play_by_play_view", db_conn, game_id)
+
     # observers ----
 
     observe({
@@ -1076,8 +1079,8 @@ mod_referee_controls_server <- function(id, db_conn, game_id, user_rv) {
     })
 
     # renderers ----
-    # UI output for play-by-play events
-    output$play_by_play_ui <- renderUI({
+    # UI output containing all game controls
+    output$controls_ui <- renderUI({
       user_id <- user_rv()$id
       if (!user_is_game_ref(db_conn, game_id, user_id)) {
         return(NULL)
