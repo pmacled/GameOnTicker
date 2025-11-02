@@ -16,25 +16,6 @@ mod_referee_controls_ui <- function(id) {
     div(
       style = "display: flex; flex-direction: column; gap: 8px; align-items: center;",
       mod_ticker_ui(ns("ticker")),
-      actionButton(ns("undo_event"), "Undo Last Event"),
-      div(
-        style = "display: flex; gap: 8px;",
-        actionButton(ns("start_pause"), "Start Clock", style = "width:180px;"),
-        actionButton(ns("edit_clock"), "Edit Clock", style = "width:180px;")
-      ),
-      div(
-        style = "display: flex; gap: 8px;",
-        actionButton(
-          ns("start_pause_play_clock"),
-          "Start Play Clock",
-          style = "width:180px;"
-        ),
-        actionButton(
-          ns("reset_play_clock"),
-          "Reset Play Clock",
-          style = "width:180px;"
-        )
-      ),
       uiOutput(ns("play_by_play_ui"))
     )
   )
@@ -424,6 +405,12 @@ mod_referee_controls_server <- function(id, db_conn, game_id) {
     finalize_game <- function(record = TRUE) {
       if (record) {
         record_event("finalize_game")
+        # Update final scores in the game table
+        DBI::dbExecute(
+          con,
+          "UPDATE game SET score_home = $1, score_away = $2 WHERE id = $3",
+          params = list(score_home_rv(), score_away_rv(), game_id)
+        )
       }
       timer_mode("final")
       showModal(modalDialog(
@@ -510,7 +497,15 @@ mod_referee_controls_server <- function(id, db_conn, game_id) {
       )
     )
 
+    last_event_init <- DBI::dbGetQuery(
+      db_conn,
+      "SELECT * FROM football_event WHERE game_id = $1 ORDER BY id DESC LIMIT 1",
+      params = list(game_id)
+    )
+
     # reactive values
+
+    # defaults for new game
     timer_mode <- reactiveVal("first_half") # "first_half", "halftime", "second_half", "ended", "final"
     clock_running_rv <- reactiveVal(FALSE)
     clock_ms_rv <- reactiveVal(25 * 60 * 1000) # 25 minutes in ms
@@ -535,14 +530,30 @@ mod_referee_controls_server <- function(id, db_conn, game_id) {
     # intended for replaying the last event when reloading the app.
     call_event_rv <- reactiveVal(FALSE)
 
-    # Initialize game based on most recent logged record for the game_id in the events table
-    last_event_init <- DBI::dbGetQuery(
-      db_conn,
-      "SELECT * FROM football_event WHERE game_id = $1 ORDER BY id DESC LIMIT 1",
-      params = list(game_id)
-    )
+    if (
+      nrow(game) == 1 && !is.na(game$home_result) && !is.na(game$away_result)
+    ) {
+      # Game has been finalized.
+      timer_mode <- reactiveVal("final")
+      clock_running_rv <- reactiveVal(FALSE)
+      clock_ms_rv <- reactiveVal(0)
 
-    if (nrow(last_event_init) == 1) {
+      play_clock_ms_rv <- reactiveVal(0)
+      play_clock_running_rv <- reactiveVal(FALSE)
+
+      down_rv <- reactiveVal(NULL)
+      girl_plays_rv <- reactiveVal(NULL)
+
+      score_home_rv <- reactiveVal(game$score_home)
+      score_away_rv <- reactiveVal(game$score_away)
+
+      possession_rv <- reactiveVal(NULL)
+
+      timeouts_home_rv <- reactiveVal(NULL)
+      timeouts_away_rv <- reactiveVal(NULL)
+    } else if (nrow(last_event_init) == 1) {
+      # Game is ongoing.
+      # Initialize game based on most recent logged record for the game_id in the events table.
       if (last_event_init$half == 1) {
         timer_mode("first_half")
       } else if (last_event_init$half == 2) {
@@ -580,7 +591,10 @@ mod_referee_controls_server <- function(id, db_conn, game_id) {
 
       down_names <- c("1st", "2nd", "3rd", "4th", "5th", "6th")
       down_girl_plays_available <-
-        if (is.na(down_rv())) {
+        if (is.null(down_rv())) {
+          # NULL means game is over/not started
+          ""
+        } else if (is.na(down_rv())) {
           # NA down means a touchdown was just scored
           "PAT"
         } else {
@@ -635,18 +649,26 @@ mod_referee_controls_server <- function(id, db_conn, game_id) {
     })
 
     ticker_game_clock <- reactive({
-      mins <- clock_ms_rv() %/% 60000
-      secs <- clock_ms_rv() %% 60000 %/% 1000
-      sprintf(
-        "%02d:%02d",
-        as.integer(mins),
-        as.integer(secs)
-      )
+      if (timer_mode() == "final") {
+        NULL
+      } else {
+        mins <- clock_ms_rv() %/% 60000
+        secs <- clock_ms_rv() %% 60000 %/% 1000
+        sprintf(
+          "%02d:%02d",
+          as.integer(mins),
+          as.integer(secs)
+        )
+      }
     })
 
     ticker_play_clock <- reactive({
-      secs <- play_clock_ms_rv() %/% 1000
-      sprintf("%02d", as.integer(secs))
+      if (timer_mode() == "final") {
+        NULL
+      } else {
+        secs <- play_clock_ms_rv() %/% 1000
+        sprintf("%02d", as.integer(secs))
+      }
     })
 
     mod_ticker_server(
@@ -705,7 +727,7 @@ mod_referee_controls_server <- function(id, db_conn, game_id) {
 
     # disable/enable timeouts
     observe(
-      if (timeouts_home_rv() <= 0) {
+      if (is.null(timeouts_home_rv()) || timeouts_home_rv() <= 0) {
         updateActionButton(
           session,
           "timeout_home",
@@ -720,7 +742,7 @@ mod_referee_controls_server <- function(id, db_conn, game_id) {
       }
     )
     observe(
-      if (timeouts_away_rv() <= 0) {
+      if (is.null(timeouts_away_rv()) || timeouts_away_rv() <= 0) {
         updateActionButton(
           session,
           "timeout_away",
@@ -954,150 +976,178 @@ mod_referee_controls_server <- function(id, db_conn, game_id) {
         "Finalize Game"
       )
 
-      tagList(
-        div(
-          style = "display: flex; flex-direction: column; gap: 8px; align-items: center;",
-          # call timeouts
+      if (timer_mode() %in% c("final")) {
+        NULL
+      } else {
+        tagList(
           div(
-            style = "display: flex; gap: 8px;",
-            actionButton(
-              ns("timeout_home"),
-              "Home Timeout",
-              style = "width:180px;"
+            style = "display: flex; flex-direction: column; gap: 8px; align-items: center;",
+            actionButton(ns("undo_event"), "Undo Last Event"),
+            div(
+              style = "display: flex; gap: 8px;",
+              actionButton(
+                ns("start_pause"),
+                "Start Clock",
+                style = "width:180px;"
+              ),
+              actionButton(
+                ns("edit_clock"),
+                "Edit Clock",
+                style = "width:180px;"
+              )
             ),
-            actionButton(
-              ns("timeout_away"),
-              "Away Timeout",
-              style = "width:180px;"
-            )
-          ),
-          if (timer_mode() == "final") {
-            NULL
-          } else if (is.na(down_rv())) {
-            # PAT options
             div(
-              style = "display: flex; flex-direction: column; gap: 8px; align-items: center;",
-              if (timer_mode() == "halftime") halftime_button,
-              if (timer_mode() == "ended") finalize_game_button,
-              div(tags$strong("Offense")),
-              div(
-                style = "display: flex; gap: 8px;",
-                actionButton(
-                  ns("pat1_good"),
-                  "1-pt Good",
-                  style = "width:180px;"
-                ),
-                actionButton(
-                  ns("pat1_miss"),
-                  "1-pt Miss",
-                  style = "width:180px;"
-                )
+              style = "display: flex; gap: 8px;",
+              actionButton(
+                ns("start_pause_play_clock"),
+                "Start Play Clock",
+                style = "width:180px;"
               ),
-              div(
-                style = "display: flex; gap: 8px;",
-                actionButton(
-                  ns("pat2_good"),
-                  "2-pt Good",
-                  style = "width:180px;"
-                ),
-                actionButton(
-                  ns("pat2_miss"),
-                  "2-pt Miss",
-                  style = "width:180px;"
-                )
+              actionButton(
+                ns("reset_play_clock"),
+                "Reset Play Clock",
+                style = "width:180px;"
+              )
+            ),
+            div(
+              style = "display: flex; gap: 8px;",
+              actionButton(
+                ns("timeout_home"),
+                "Home Timeout",
+                style = "width:180px;"
               ),
+              actionButton(
+                ns("timeout_away"),
+                "Away Timeout",
+                style = "width:180px;"
+              )
+            ),
+            if (is.na(down_rv())) {
+              # PAT options
               div(
-                style = "display: flex; gap: 8px;",
-                actionButton(
-                  ns("pat3_good"),
-                  "3-pt Good",
-                  style = "width:180px;"
+                style = "display: flex; flex-direction: column; gap: 8px; align-items: center;",
+                if (timer_mode() == "halftime") halftime_button,
+                if (timer_mode() == "ended") finalize_game_button,
+                div(tags$strong("Offense")),
+                div(
+                  style = "display: flex; gap: 8px;",
+                  actionButton(
+                    ns("pat1_good"),
+                    "1-pt Good",
+                    style = "width:180px;"
+                  ),
+                  actionButton(
+                    ns("pat1_miss"),
+                    "1-pt Miss",
+                    style = "width:180px;"
+                  )
                 ),
-                actionButton(
-                  ns("pat3_miss"),
-                  "3-pt Miss",
-                  style = "width:180px;"
-                )
-              ),
-              div(tags$strong("Defense")),
-              div(
-                style = "display: flex; gap: 8px;",
-                actionButton(
-                  ns("pat_def"),
-                  "Defensive Return",
-                  style = "width:180px;"
+                div(
+                  style = "display: flex; gap: 8px;",
+                  actionButton(
+                    ns("pat2_good"),
+                    "2-pt Good",
+                    style = "width:180px;"
+                  ),
+                  actionButton(
+                    ns("pat2_miss"),
+                    "2-pt Miss",
+                    style = "width:180px;"
+                  )
+                ),
+                div(
+                  style = "display: flex; gap: 8px;",
+                  actionButton(
+                    ns("pat3_good"),
+                    "3-pt Good",
+                    style = "width:180px;"
+                  ),
+                  actionButton(
+                    ns("pat3_miss"),
+                    "3-pt Miss",
+                    style = "width:180px;"
+                  )
+                ),
+                div(tags$strong("Defense")),
+                div(
+                  style = "display: flex; gap: 8px;",
+                  actionButton(
+                    ns("pat_def"),
+                    "Defensive Return",
+                    style = "width:180px;"
+                  )
                 )
               )
-            )
-          } else {
-            # Regular play options
-            div(
-              style = "display: flex; flex-direction: column; gap: 8px; align-items: center;",
-              if (timer_mode() == "halftime") halftime_button,
-              if (timer_mode() == "ended") finalize_game_button,
-              div(tags$strong("Offense")),
+            } else {
+              # Regular play options
               div(
-                style = "display: flex; gap: 8px;",
-                actionButton(
-                  ns("guy_play"),
-                  "Guy Play",
-                  style = "width:180px;"
+                style = "display: flex; flex-direction: column; gap: 8px; align-items: center;",
+                if (timer_mode() == "halftime") halftime_button,
+                if (timer_mode() == "ended") finalize_game_button,
+                div(tags$strong("Offense")),
+                div(
+                  style = "display: flex; gap: 8px;",
+                  actionButton(
+                    ns("guy_play"),
+                    "Guy Play",
+                    style = "width:180px;"
+                  ),
+                  actionButton(
+                    ns("girl_play"),
+                    "Girl Play",
+                    style = "width:180px;"
+                  )
                 ),
-                actionButton(
-                  ns("girl_play"),
-                  "Girl Play",
-                  style = "width:180px;"
-                )
-              ),
-              div(
-                style = "display: flex; gap: 8px;",
-                actionButton(
-                  ns("guy_td"),
-                  "Guy TD",
-                  style = "width:180px;"
+                div(
+                  style = "display: flex; gap: 8px;",
+                  actionButton(
+                    ns("guy_td"),
+                    "Guy TD",
+                    style = "width:180px;"
+                  ),
+                  actionButton(
+                    ns("girl_td"),
+                    "Girl TD",
+                    style = "width:180px;"
+                  )
                 ),
-                actionButton(
-                  ns("girl_td"),
-                  "Girl TD",
-                  style = "width:180px;"
-                )
-              ),
-              div(
-                style = "display: flex; gap: 8px;",
-                actionButton(
-                  ns("punt"),
-                  "Punt",
-                  disabled = !(down_rv() < 6 && girl_plays_rv() > 0),
-                  style = "width:180px;"
-                )
-              ),
-              div(tags$strong("Defense")),
-              div(
-                style = "display: flex; gap: 8px;",
-                actionButton(
-                  ns("turnover"),
-                  "Turnover",
-                  style = "width:180px;"
+                div(
+                  style = "display: flex; gap: 8px;",
+                  actionButton(
+                    ns("punt"),
+                    "Punt",
+                    disabled = !(down_rv() < 6 && girl_plays_rv() > 0),
+                    style = "width:180px;"
+                  )
                 ),
-                actionButton(ns("safety"), "Safety", style = "width:180px;")
-              ),
-              div(
-                style = "display: flex; gap: 8px;",
-                actionButton(
-                  ns("guy_td_def"),
-                  "Guy TD (Def)",
-                  style = "width:180px;"
+                div(tags$strong("Defense")),
+                div(
+                  style = "display: flex; gap: 8px;",
+                  actionButton(
+                    ns("turnover"),
+                    "Turnover",
+                    style = "width:180px;"
+                  ),
+                  actionButton(ns("safety"), "Safety", style = "width:180px;")
                 ),
-                actionButton(
-                  ns("girl_td_def"),
-                  "Girl TD (Def)",
-                  style = "width:180px;"
+                div(
+                  style = "display: flex; gap: 8px;",
+                  actionButton(
+                    ns("guy_td_def"),
+                    "Guy TD (Def)",
+                    style = "width:180px;"
+                  ),
+                  actionButton(
+                    ns("girl_td_def"),
+                    "Girl TD (Def)",
+                    style = "width:180px;"
+                  )
                 )
               )
-            )
-          }
+            }
+          )
         )
-      )
+      }
     })
   })
 }

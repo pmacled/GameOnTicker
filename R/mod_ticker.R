@@ -123,6 +123,9 @@ mod_ticker_server <- function(id, game_data, game_clock, play_clock) {
 
     output$timeouts_home <- renderUI({
       n_remaining <- get_val("timeouts_home")
+      if (is.null(n_remaining) || length(n_remaining) == 0) {
+        return(NULL)
+      }
       lapply(1:3, function(i) {
         div(
           class = paste(
@@ -134,6 +137,9 @@ mod_ticker_server <- function(id, game_data, game_clock, play_clock) {
     })
     output$timeouts_away <- renderUI({
       n_remaining <- get_val("timeouts_away")
+      if (is.null(n_remaining) || length(n_remaining) == 0) {
+        return(NULL)
+      }
       lapply(1:3, function(i) {
         div(
           class = paste(
