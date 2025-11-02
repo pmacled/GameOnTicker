@@ -755,7 +755,12 @@ mod_referee_controls_server <- function(id, db_conn, game_id, user_rv) {
       play_clock = ticker_play_clock
     )
 
-    mod_play_by_play_view_server("play_by_play_view", db_conn, game_id)
+    mod_play_by_play_view_server(
+      "play_by_play_view",
+      db_conn = db_conn,
+      game_id = game_id,
+      game_data = ticker_game_data
+    )
 
     # observers ----
 

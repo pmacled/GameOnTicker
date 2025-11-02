@@ -19,7 +19,12 @@ mod_play_by_play_view_ui <- function(id) {
 #' play_by_play_view Server Functions
 #'
 #' @noRd
-mod_play_by_play_view_server <- function(id, db_conn, game_id) {
+mod_play_by_play_view_server <- function(
+  id,
+  db_conn,
+  game_id,
+  game_data = NULL
+) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
@@ -48,16 +53,23 @@ mod_play_by_play_view_server <- function(id, db_conn, game_id) {
         type == "pat_def" ~ "Defensive PAT",
         type == "punt" ~ "Punt",
         type == "turnover" ~ "Turnover",
+        type == "turnover_on_downs" ~ "Turnover on Downs",
         type == "safety" ~ "Safety",
-        type == "timeout_home" ~ "Timeout (Home)",
-        type == "timeout_away" ~ "Timeout (Away)",
+        type == "timeout_home" ~ "Timeout",
+        type == "timeout_away" ~ "Timeout",
+        type == "start_second_half" ~ "End of Half",
+        type == "finalize_game" ~ "End of Game",
         TRUE ~ NA_character_
       )
     }
 
     # play-by-play data
     pbp_data <- reactive({
-      invalidateLater(5000, session)
+      if (is.null(game_data)) {
+        invalidateLater(10000, session)
+      } else {
+        req(game_data())
+      }
       events <- DBI::dbGetQuery(
         db_conn,
         "SELECT e.*, 
