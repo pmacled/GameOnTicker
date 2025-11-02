@@ -485,15 +485,16 @@ mod_referee_controls_server <- function(id, db_conn, game_id) {
     t.id AS team_id,
     t.name AS team_name,
     SUM(CASE
-      WHEN ((g.home_team_id = t.id AND g.score_home > g.score_away) OR
-            (g.away_team_id = t.id AND g.score_away > g.score_home))
+      WHEN (g.home_team_id = t.id AND g.home_result = 'W') OR
+           (g.away_team_id = t.id AND g.away_result = 'W')
       THEN 1 ELSE 0 END) AS wins,
     SUM(CASE
-      WHEN ((g.home_team_id = t.id AND g.score_home < g.score_away) OR
-            (g.away_team_id = t.id AND g.score_away < g.score_home))
+      WHEN (g.home_team_id = t.id AND g.home_result = 'L') OR
+           (g.away_team_id = t.id AND g.away_result = 'L')
       THEN 1 ELSE 0 END) AS losses,
     SUM(CASE
-      WHEN (g.score_home = g.score_away)
+      WHEN (g.home_team_id = t.id AND g.home_result = 'T') OR
+           (g.away_team_id = t.id AND g.away_result = 'T')
       THEN 1 ELSE 0 END) AS ties
   FROM team t
     JOIN game g ON (g.home_team_id = t.id OR g.away_team_id = t.id)
