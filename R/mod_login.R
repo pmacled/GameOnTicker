@@ -34,9 +34,10 @@ mod_login_server <- function(id, db_conn, user_rv) {
       if (is.null(user_rv())) {
         actionLink(ns("show_auth"), "Login/Register", class = "nav-link")
       } else {
-        tagList(
-          span(paste("Signed in as", user_rv())),
-          actionLink(ns("sign_out"), "Sign Out", class = "nav-link")
+        actionLink(
+          ns("sign_out"),
+          sprintf("Sign Out (%s)", user_rv()$username),
+          class = "nav-link"
         )
       }
     })
@@ -101,7 +102,7 @@ mod_login_server <- function(id, db_conn, user_rv) {
           params = list(input$auth_username, hash)
         )
         if (nrow(user) == 1) {
-          user_rv(user$username)
+          user_rv(user)
           output$auth_status <- renderText("Login successful.")
           removeModal()
         } else {

@@ -12,16 +12,13 @@ app_server <- function(input, output, session) {
 
   user_rv <- reactiveVal()
 
-  observeEvent(user_rv(), {
-    req(user_rv())
-    showNotification(
-      paste("Welcome,", user_rv()),
-      type = "message"
-    )
-  })
-
   mod_login_server("login_1", db_conn, user_rv)
 
-  mod_referee_controls_server("referee_controls_1", db_conn, game_id = 170)
+  mod_referee_controls_server(
+    "referee_controls_1",
+    db_conn,
+    game_id = 170,
+    user_rv = user_rv
+  )
   mod_play_by_play_view_server("play_by_play_view_1", db_conn, game_id = 170)
 }

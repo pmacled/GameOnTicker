@@ -12,7 +12,6 @@
 mod_referee_controls_ui <- function(id) {
   ns <- NS(id)
   tagList(
-    h3("Referee Controls"),
     div(
       style = "display: flex; flex-direction: column; gap: 8px; align-items: center;",
       mod_ticker_ui(ns("ticker")),
@@ -24,11 +23,26 @@ mod_referee_controls_ui <- function(id) {
 #' referee_controls Server Functions
 #'
 #' @noRd
-mod_referee_controls_server <- function(id, db_conn, game_id) {
+mod_referee_controls_server <- function(id, db_conn, game_id, user_rv) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
     # functions ----
+
+    user_is_game_ref <- function(db_conn, game_id, user_id) {
+      if (is.na(game_id) || is.null(game_id)) {
+        return(TRUE)
+      }
+      if (is.na(user_id) || is.null(user_id)) {
+        return(FALSE)
+      }
+      res <- DBI::dbGetQuery(
+        db_conn,
+        "SELECT 1 FROM game_referee WHERE game_id = $1 AND user_id = $2 LIMIT 1",
+        params = list(game_id, user_id)
+      )
+      nrow(res) > 0
+    }
 
     get_event_points <- function(event_type) {
       switch(
@@ -49,7 +63,9 @@ mod_referee_controls_server <- function(id, db_conn, game_id) {
     get_scoring_team <- function(event_type) {
       offense <- possession_rv()
       defense <- setdiff(c("Home", "Away"), offense)
-      if (
+      if (event_type == "coin_toss") {
+        offense
+      } else if (
         event_type %in%
           c("guy_touchdown_def", "girl_touchdown_def", "pat_def", "safety")
       ) {
@@ -103,19 +119,11 @@ mod_referee_controls_server <- function(id, db_conn, game_id) {
     }
 
     confirm_coin_toss <- function(record = TRUE) {
-      if (record && global_record_flag) {
-        DBI::dbExecute(
-          db_conn,
-          "INSERT INTO football_event (game_id, type, possession, scored_by) VALUES ($1, $2, $3, $4)",
-          params = list(
-            game_id,
-            "coin_toss",
-            input$possession_team,
-            input$toss_winner
-          )
-        )
-      }
+      # generally, reactive vals are set after recording, but for coin toss, set reactive value first.
       possession_rv(input$possession_team)
+      if (record) {
+        record_event("coin_toss")
+      }
       removeModal()
     }
 
@@ -406,7 +414,8 @@ mod_referee_controls_server <- function(id, db_conn, game_id) {
       clock_running_rv(FALSE)
       timer_mode("second_half")
       clock_ms_rv(25 * 60 * 1000)
-      change_possession()
+      reset_downs()
+      possession_rv(setdiff(input$possession_team, c("Home", "Away")))
     }
 
     # Helper to end a game
@@ -644,31 +653,6 @@ mod_referee_controls_server <- function(id, db_conn, game_id) {
 
       # replay the event without recording
       call_event_rv(last_event_init$type)
-    } else if (nrow(last_event_init) == 0) {
-      showModal(modalDialog(
-        title = "Coin Toss",
-        shinyWidgets::radioGroupButtons(
-          inputId = ns("toss_winner"),
-          label = "Who won the toss?",
-          choices = setNames(
-            c("Home", "Away"),
-            c(game_info$home_name, game_info$away_name)
-          ),
-          justified = TRUE
-        ),
-        shinyWidgets::radioGroupButtons(
-          inputId = ns("possession_team"),
-          label = "Who starts with possession?",
-          choices = setNames(
-            c("Home", "Away"),
-            c(game_info$home_name, game_info$away_name)
-          ),
-          justified = TRUE
-        ),
-        footer = tagList(
-          actionButton(ns("confirm_coin_toss"), "Start Game")
-        )
-      ))
     }
 
     ticker_game_data <- reactive({
@@ -771,6 +755,38 @@ mod_referee_controls_server <- function(id, db_conn, game_id) {
     )
 
     # observers ----
+
+    observe({
+      user_id <- user_rv()$id
+      if (nrow(last_event_init) == 0) {
+        if (user_is_game_ref(db_conn, game_id, user_id)) {
+          showModal(modalDialog(
+            title = "Coin Toss",
+            shinyWidgets::radioGroupButtons(
+              inputId = ns("toss_winner"),
+              label = "Who won the toss?",
+              choices = setNames(
+                c("Home", "Away"),
+                c(game_info$home_name, game_info$away_name)
+              ),
+              justified = TRUE
+            ),
+            shinyWidgets::radioGroupButtons(
+              inputId = ns("possession_team"),
+              label = "Who starts with possession?",
+              choices = setNames(
+                c("Home", "Away"),
+                c(game_info$home_name, game_info$away_name)
+              ),
+              justified = TRUE
+            ),
+            footer = tagList(
+              actionButton(ns("confirm_coin_toss"), "Start Game")
+            )
+          ))
+        }
+      }
+    })
 
     observe({
       if (is.character(call_event_rv())) {
@@ -1062,6 +1078,11 @@ mod_referee_controls_server <- function(id, db_conn, game_id) {
     # renderers ----
     # UI output for play-by-play events
     output$play_by_play_ui <- renderUI({
+      user_id <- user_rv()$id
+      if (!user_is_game_ref(db_conn, game_id, user_id)) {
+        return(NULL)
+      }
+
       halftime_button <- actionButton(
         ns("start_second_half"),
         "Start Second Half"
