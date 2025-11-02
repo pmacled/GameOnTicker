@@ -102,6 +102,23 @@ mod_referee_controls_server <- function(id, db_conn, game_id) {
       )
     }
 
+    confirm_coin_toss <- function(record = TRUE) {
+      if (record && global_record_flag) {
+        DBI::dbExecute(
+          db_conn,
+          "INSERT INTO football_event (game_id, type, possession, scored_by) VALUES ($1, $2, $3, $4)",
+          params = list(
+            game_id,
+            "coin_toss",
+            input$possession_team,
+            input$toss_winner
+          )
+        )
+      }
+      possession_rv(input$possession_team)
+      removeModal()
+    }
+
     stop_clock <- function(record = TRUE) {
       if (record && timer_mode() %in% c("first_half", "second_half")) {
         record_event("stop_clock")
@@ -627,6 +644,31 @@ mod_referee_controls_server <- function(id, db_conn, game_id) {
 
       # replay the event without recording
       call_event_rv(last_event_init$type)
+    } else if (nrow(last_event_init) == 0) {
+      showModal(modalDialog(
+        title = "Coin Toss",
+        shinyWidgets::radioGroupButtons(
+          inputId = ns("toss_winner"),
+          label = "Who won the toss?",
+          choices = setNames(
+            c("Home", "Away"),
+            c(game_info$home_name, game_info$away_name)
+          ),
+          justified = TRUE
+        ),
+        shinyWidgets::radioGroupButtons(
+          inputId = ns("possession_team"),
+          label = "Who starts with possession?",
+          choices = setNames(
+            c("Home", "Away"),
+            c(game_info$home_name, game_info$away_name)
+          ),
+          justified = TRUE
+        ),
+        footer = tagList(
+          actionButton(ns("confirm_coin_toss"), "Start Game")
+        )
+      ))
     }
 
     ticker_game_data <- reactive({
@@ -806,6 +848,10 @@ mod_referee_controls_server <- function(id, db_conn, game_id) {
         )
       }
     )
+
+    observeEvent(input$confirm_coin_toss, {
+      confirm_coin_toss()
+    })
 
     observeEvent(input$start_second_half, {
       start_second_half()
