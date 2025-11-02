@@ -803,7 +803,8 @@ mod_referee_controls_server <- function(id, db_conn, game_id, user_rv) {
         } else if (call_event_rv() == "second_half_clock_expired") {
           end_game(record = FALSE)
         } else if (
-          exists(call_event_rv()) && !call_event_rv() %in% c("start_clock")
+          exists(call_event_rv()) &&
+            !call_event_rv() %in% c("start_clock", "coin_toss")
         ) {
           event_fn <- get(call_event_rv())
           if (is.function(event_fn)) {
