@@ -64,6 +64,9 @@ mod_referee_controls_server <- function(id, db_conn, game_id) {
     # function to handle recording of event to database.
     # events are expected to be recorded prior to points scored, timeout used, etc.
     record_event <- function(event_type) {
+      if (!global_record_flag) {
+        return(invisible(NULL))
+      }
       DBI::dbExecute(
         db_conn,
         "INSERT INTO football_event (game_id, half, clock_ms, down, girl_plays, possession, score_home, score_away, timeouts_home, timeouts_away, type, points, scored_by)
@@ -403,7 +406,7 @@ mod_referee_controls_server <- function(id, db_conn, game_id) {
 
     # Helper to finalize a game
     finalize_game <- function(record = TRUE) {
-      if (record) {
+      if (record && global_record_flag) {
         record_event("finalize_game")
         # Update final scores in the game table
         DBI::dbExecute(
@@ -421,24 +424,70 @@ mod_referee_controls_server <- function(id, db_conn, game_id) {
 
     # initialization ----
 
-    # validate that the game_id is in the games table
-    game <- DBI::dbGetQuery(
-      db_conn,
-      "SELECT * FROM game WHERE id = $1 LIMIT 1",
-      params = list(game_id)
-    )
-    if (nrow(game) == 0) {
-      showModal(modalDialog(
-        title = "Error",
-        sprintf("Game ID %s not found in games table.", game_id)
-      ))
-      return(NULL)
-    }
+    global_record_flag <- !is.na(game_id)
 
-    # collect all game and team information
-    game_info <- DBI::dbGetQuery(
-      db_conn,
-      "
+    if (is.na(game_id)) {
+      # Simulated game: Home vs Away, 0-0 records
+      game <- tibble::tibble(
+        id = NA_integer_,
+        created_at = Sys.time(),
+        home_team_id = -99L,
+        away_team_id = -999L,
+        location_id = -99L,
+        start_time = Sys.time(),
+        game_type = "Simulated",
+        score_home = 0,
+        score_away = 0,
+        division_id = -99L,
+        home_result = NA_character_,
+        away_result = NA_character_,
+        result_method = NA_character_,
+        result_notes = NA_character_
+      )
+
+      game_info <- tibble::tibble(
+        game_id = -99L,
+        home_team_id = -99L,
+        home_name = "Home",
+        home_logo = NA_character_,
+        away_team_id = -999L,
+        away_name = "Away",
+        away_logo = NA_character_,
+        division_id = -99L,
+        division_name = NA_character_,
+        league_id = -99L,
+        league_name = NA_character_,
+        season = NA_character_
+      )
+
+      team_records <- tibble::tibble(
+        team_id = c(-99L, -999L),
+        team_name = c("Home", "Away"),
+        wins = c(0, 0),
+        losses = c(0, 0),
+        ties = c(0, 0)
+      )
+
+      last_event_init <- tibble::tibble()
+    } else {
+      # validate that the game_id is in the games table
+      game <- DBI::dbGetQuery(
+        db_conn,
+        "SELECT * FROM game WHERE id = $1 LIMIT 1",
+        params = list(game_id)
+      )
+      if (nrow(game) == 0) {
+        showModal(modalDialog(
+          title = "Error",
+          sprintf("Game ID %s not found in games table.", game_id)
+        ))
+        return(NULL)
+      }
+
+      # collect all game and team information
+      game_info <- DBI::dbGetQuery(
+        db_conn,
+        "
   SELECT
     g.id AS game_id,
     g.home_team_id,
@@ -460,14 +509,14 @@ mod_referee_controls_server <- function(id, db_conn, game_id) {
   WHERE g.id = $1
   LIMIT 1
   ",
-      params = list(game_id)
-    )
+        params = list(game_id)
+      )
 
-    # one row per team with win/loss/tie counts for games in this
-    # division/season played up to this game.
-    team_records <- DBI::dbGetQuery(
-      db_conn,
-      "
+      # one row per team with win/loss/tie counts for games in this
+      # division/season played up to this game.
+      team_records <- DBI::dbGetQuery(
+        db_conn,
+        "
   SELECT
     t.id AS team_id,
     t.name AS team_name,
@@ -490,18 +539,19 @@ mod_referee_controls_server <- function(id, db_conn, game_id) {
     AND (t.id = $2 OR t.id = $3)
   GROUP BY t.id, t.name
   ",
-      params = list(
-        game_info$division_id,
-        game_info$home_team_id,
-        game_info$away_team_id
+        params = list(
+          game_info$division_id,
+          game_info$home_team_id,
+          game_info$away_team_id
+        )
       )
-    )
 
-    last_event_init <- DBI::dbGetQuery(
-      db_conn,
-      "SELECT * FROM football_event WHERE game_id = $1 ORDER BY id DESC LIMIT 1",
-      params = list(game_id)
-    )
+      last_event_init <- DBI::dbGetQuery(
+        db_conn,
+        "SELECT * FROM football_event WHERE game_id = $1 ORDER BY id DESC LIMIT 1",
+        params = list(game_id)
+      )
+    }
 
     # reactive values
 
