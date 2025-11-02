@@ -15,23 +15,23 @@ mod_ticker_ui <- function(id) {
       # Top row: logos, team info, scores
       div(
         class = "ticker-top-row",
-        div(class = "ticker-left-logo", uiOutput(ns("home_logo"))),
+        div(class = "ticker-left-logo", uiOutput(ns("away_logo"))),
         div(
           class = "ticker-left-info",
-          div(class = "team-name", textOutput(ns("home_name"))),
-          div(class = "team-timeouts", uiOutput(ns("timeouts_home"))),
-          div(class = "team-record", textOutput(ns("record_home")))
-        ),
-        div(class = "ticker-left-score", textOutput(ns("score_home"))),
-        div(class = "ticker-center-spacer"),
-        div(class = "ticker-right-score", textOutput(ns("score_away"))),
-        div(
-          class = "ticker-right-info",
           div(class = "team-name", textOutput(ns("away_name"))),
           div(class = "team-timeouts", uiOutput(ns("timeouts_away"))),
           div(class = "team-record", textOutput(ns("record_away")))
         ),
-        div(class = "ticker-right-logo", uiOutput(ns("away_logo")))
+        div(class = "ticker-left-score", textOutput(ns("score_away"))),
+        div(class = "ticker-center-spacer"),
+        div(class = "ticker-right-score", textOutput(ns("score_home"))),
+        div(
+          class = "ticker-right-info",
+          div(class = "team-name", textOutput(ns("home_name"))),
+          div(class = "team-timeouts", uiOutput(ns("timeouts_home"))),
+          div(class = "team-record", textOutput(ns("record_home")))
+        ),
+        div(class = "ticker-right-logo", uiOutput(ns("home_logo")))
       ),
       # Bottom row: clocks, half, down
       div(
@@ -65,6 +65,19 @@ mod_ticker_server <- function(id, game_data, game_clock, play_clock) {
       if (is.reactive(game_data)) game_data()[[name]] else game_data[[name]]
     }
 
+    output$away_logo <- renderUI({
+      logo <- get_val("away_logo")
+      if (!is.null(logo) && !is.na(logo) && nzchar(logo)) {
+        logo_full <- ifelse(
+          grepl("/", logo),
+          logo,
+          file.path(Sys.getenv("STORAGE_BASE_URL"), "images", "logos", logo)
+        )
+        tags$img(src = logo_full, class = "team-logo")
+      } else {
+        tags$div(class = "team-logo")
+      }
+    })
     output$home_logo <- renderUI({
       logo <- get_val("home_logo")
       if (!is.null(logo) && !is.na(logo) && nzchar(logo)) {
@@ -79,35 +92,22 @@ mod_ticker_server <- function(id, game_data, game_clock, play_clock) {
         tags$div(class = "team-logo")
       }
     })
-    output$away_logo <- renderUI({
-      logo <- get_val("away_logo")
-      if (!is.null(logo) && !is.na(logo) && nzchar(logo)) {
-        logo_full <- ifelse(
-          grepl("/", logo),
-          logo,
-          file.path(Sys.getenv("STORAGE_BASE_URL"), "images", "logos", logo)
-        )
-        tags$img(src = logo_full, class = "team-logo")
-      } else {
-        tags$div(class = "team-logo")
-      }
-    })
-    output$home_name <- renderText(get_val("home_name"))
     output$away_name <- renderText(get_val("away_name"))
-    output$record_home <- renderText(get_val("record_home"))
+    output$home_name <- renderText(get_val("home_name"))
     output$record_away <- renderText(get_val("record_away"))
-    output$score_home <- renderText({
-      if (isTRUE(get_val("possession") == "Home")) {
-        paste(get_val("score_home"), "\u25C2")
-      } else {
-        get_val("score_home")
-      }
-    })
+    output$record_home <- renderText(get_val("record_home"))
     output$score_away <- renderText({
       if (isTRUE(get_val("possession") == "Away")) {
-        paste("\u25B8", get_val("score_away"))
+        paste(get_val("score_away"), "\u25C2")
       } else {
         get_val("score_away")
+      }
+    })
+    output$score_home <- renderText({
+      if (isTRUE(get_val("possession") == "Home")) {
+        paste("\u25B8", get_val("score_home"))
+      } else {
+        get_val("score_home")
       }
     })
     output$half <- renderText(get_val("half"))
@@ -121,8 +121,8 @@ mod_ticker_server <- function(id, game_data, game_clock, play_clock) {
       if (is.reactive(play_clock)) play_clock() else play_clock
     })
 
-    output$timeouts_home <- renderUI({
-      n_remaining <- get_val("timeouts_home")
+    output$timeouts_away <- renderUI({
+      n_remaining <- get_val("timeouts_away")
       if (is.null(n_remaining) || length(n_remaining) == 0) {
         return(NULL)
       }
@@ -135,8 +135,8 @@ mod_ticker_server <- function(id, game_data, game_clock, play_clock) {
         )
       })
     })
-    output$timeouts_away <- renderUI({
-      n_remaining <- get_val("timeouts_away")
+    output$timeouts_home <- renderUI({
+      n_remaining <- get_val("timeouts_home")
       if (is.null(n_remaining) || length(n_remaining) == 0) {
         return(NULL)
       }
