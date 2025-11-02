@@ -43,13 +43,13 @@ mod_login_server <- function(id, db_conn, user_rv) {
 
     observeEvent(input$show_auth, {
       showModal(modalDialog(
-        shinyWidgets::switchInput(
-          ns("auth_mode"),
+        shinyWidgets::radioGroupButtons(
+          inputId = ns("auth_mode"),
           label = NULL,
-          onLabel = "Login",
-          offLabel = "Register",
-          value = TRUE, # TRUE for Login, FALSE for Register
-          size = "small"
+          choices = c("Login", "Register"),
+          selected = "Login",
+          justified = TRUE,
+          size = "sm"
         ),
         textInput(ns("auth_username"), "Username", width = "150px"),
         passwordInput(ns("auth_password"), "Password", width = "150px"),
@@ -72,7 +72,7 @@ mod_login_server <- function(id, db_conn, user_rv) {
 
     observeEvent(input$auth_submit, {
       req(input$auth_username, input$auth_password)
-      mode <- if (isTRUE(input$auth_mode)) "Login" else "Register"
+      mode <- input$auth_mode
       if (mode == "Register") {
         # Registration logic
         exists <- DBI::dbGetQuery(
