@@ -897,17 +897,6 @@ mod_referee_controls_server <- function(id, db_conn, game_id, user_rv) {
         "start_pause",
         label = if (clock_running_rv()) "Pause Clock" else "Start Clock"
       )
-    })
-
-    observe({
-      updateActionButton(
-        session,
-        "start_pause",
-        label = if (clock_running_rv()) "Pause Clock" else "Start Clock"
-      )
-    })
-
-    observe({
       updateActionButton(
         session,
         "edit_clock",
