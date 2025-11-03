@@ -1,101 +1,44 @@
 /* Standings Module Styles */
 
+:root {
+  --standings-border-radius: 8px;
+  --standings-padding: 20px;
+  --standings-mobile-padding: 10px;
+  --standings-table-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  --standings-row-padding: 12px 8px;
+  --standings-row-mobile-padding: 8px 4px;
+  --standings-row-small-mobile-padding: 6px 3px;
+  --standings-cell-padding: 10px 8px;
+  --standings-cell-mobile-padding: 8px 4px;
+  --standings-cell-small-mobile-padding: 6px 3px;
+  --transition-duration: 0.2s;
+}
+
 .standings-container {
-  padding: 20px;
+  padding: var(--standings-padding);
   max-width: 1200px;
   margin: 0 auto;
 }
 
 .division-standings {
   margin-bottom: 30px;
-}
-
-.division-title {
-  color: #2c3e50;
-  border-bottom: 2px solid #3498db;
-  padding-bottom: 10px;
-  margin-bottom: 20px;
-  font-size: 1.5em;
-  font-weight: bold;
-}
-
-.standings-table {
   width: 100%;
-  border-collapse: collapse;
-  background: white;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.standings-table th {
-  background-color: #34495e;
-  color: white;
-  padding: 12px 8px;
-  text-align: center;
-  font-weight: bold;
-  font-size: 0.9em;
-}
-
-.standings-table td {
-  padding: 10px 8px;
-  text-align: center;
-  border-bottom: 1px solid #ecf0f1;
-}
-
-.standings-table tbody tr:hover {
-  background-color: #f8f9fa;
-}
-
-.standings-table tbody tr:nth-child(even) {
-  background-color: #fafafa;
-}
-
-.standings-table tbody tr:nth-child(even):hover {
-  background-color: #f0f0f0;
-}
-
-/* Team name column - left align */
-.standings-table td:nth-child(2) {
-  text-align: left;
-  font-weight: 500;
 }
 
 .no-standings {
   text-align: center;
   padding: 40px;
-  color: #7f8c8d;
+  color: var(--bs-secondary-color);
   font-style: italic;
   font-size: 1.1em;
+  background: var(--bs-body-bg);
+  border-radius: var(--standings-border-radius);
+  border: 1px solid var(--bs-border-color);
 }
 
 /* Mobile responsiveness */
 @media (max-width: 768px) {
   .standings-container {
-    padding: 10px;
-  }
-  
-  .standings-table {
-    font-size: 0.8em;
-  }
-  
-  .standings-table th,
-  .standings-table td {
-    padding: 8px 4px;
-  }
-  
-  .division-title {
-    font-size: 1.3em;
-  }
-}
-
-@media (max-width: 600px) {
-  .standings-table {
-    font-size: 0.7em;
-  }
-  
-  .standings-table th,
-  .standings-table td {
-    padding: 6px 3px;
+    padding: var(--standings-mobile-padding);
   }
 }

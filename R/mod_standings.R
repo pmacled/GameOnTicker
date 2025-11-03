@@ -36,6 +36,7 @@ mod_standings_server <- function(id, db_conn, league_id, division_id = NULL) {
         SELECT d.id, d.name, d.rank
         FROM division d
         WHERE d.league_id = $1
+        ORDER BY d.rank
       "
       if (!is.null(division_id)) {
         division_query <- paste0(
@@ -55,7 +56,7 @@ mod_standings_server <- function(id, db_conn, league_id, division_id = NULL) {
         return(NULL)
       }
 
-      # Get all completed games for the divisions
+      # Get all completed games for the divisions with team info
       games_query <- "
         SELECT 
           g.id as game_id,
@@ -66,11 +67,12 @@ mod_standings_server <- function(id, db_conn, league_id, division_id = NULL) {
           g.division_id,
           g.home_result,
           g.away_result,
+          g.start_time,
           ht.name as home_team_name,
-          at.name as away_team_name
+          ht.logo as home_team_logo,
+          at.name as away_team_name,
+          at.logo as away_team_logo
         FROM game g
-        JOIN team_registration htr ON g.home_team_id = htr.team_id AND htr.league_id = $1
-        JOIN team_registration atr ON g.away_team_id = atr.team_id AND atr.league_id = $1
         JOIN team ht ON g.home_team_id = ht.id
         JOIN team at ON g.away_team_id = at.id
         WHERE g.division_id IN ("
@@ -78,7 +80,7 @@ mod_standings_server <- function(id, db_conn, league_id, division_id = NULL) {
       # Create placeholders for division IDs
       division_placeholders <- paste0(
         "$",
-        2:(length(divisions$id) + 1),
+        1:length(divisions$id),
         collapse = ", "
       )
       games_query <- paste0(
@@ -87,11 +89,12 @@ mod_standings_server <- function(id, db_conn, league_id, division_id = NULL) {
         ")
           AND g.home_result IS NOT NULL 
           AND g.away_result IS NOT NULL
+        ORDER BY g.start_time
       "
       )
 
-      # Create parameter list with league_id and all division IDs
-      query_params <- c(list(league_id), as.list(as.integer(divisions$id)))
+      # Create parameter list with all division IDs
+      query_params <- as.list(as.integer(divisions$id))
 
       games <- DBI::dbGetQuery(
         db_conn,
@@ -135,45 +138,24 @@ mod_standings_server <- function(id, db_conn, league_id, division_id = NULL) {
             return(div(class = "no-standings", "No standings data available"))
           }
 
-          # Create a table for each division
-          divisions <- data$divisions[order(data$divisions$rank), ]
-
-          tables <- lapply(seq_len(nrow(divisions)), function(i) {
-            div_id <- divisions$id[i]
-            div_name <- divisions$name[i]
-            div_standings <- data$standings[
-              data$standings$division_id == div_id,
-            ]
-
-            if (nrow(div_standings) == 0) {
-              return(div(
-                h3(div_name),
-                p("No games played in this division")
-              ))
+          # Create a GT table with division group headers
+          gt_table <- tryCatch(
+            {
+              create_standings_table(data$standings, data$divisions)
+            },
+            error = function(e) {
+              # Show error message if GT table creation fails
+              div(
+                class = "standings-error",
+                p(paste("Error creating standings table:", e$message))
+              )
             }
+          )
 
-            # Create GT table with error handling
-            gt_table <- tryCatch(
-              {
-                create_standings_table(div_standings, div_name)
-              },
-              error = function(e) {
-                # Show error message if GT table creation fails
-                div(
-                  class = "standings-error",
-                  p(paste("Error creating table for", div_name, ":", e$message))
-                )
-              }
-            )
-
-            div(
-              class = "division-standings",
-              h3(div_name, class = "division-title"),
-              gt_table
-            )
-          })
-
-          do.call(tagList, tables)
+          div(
+            class = "division-standings",
+            gt_table
+          )
         },
         error = function(e) {
           div(
@@ -205,12 +187,14 @@ calculate_standings <- function(games, divisions) {
     paste(
       games$home_team_id,
       games$home_team_name,
+      games$home_team_logo,
       games$division_id,
       sep = "|"
     ),
     paste(
       games$away_team_id,
       games$away_team_name,
+      games$away_team_logo,
       games$division_id,
       sep = "|"
     )
@@ -221,9 +205,10 @@ calculate_standings <- function(games, divisions) {
     lapply(all_teams, function(x) {
       parts <- strsplit(x, "\\|")[[1]]
       data.frame(
-        team_id = as.numeric(parts[1]),
+        team_id = as.integer(parts[1]),
         team_name = parts[2],
-        division_id = as.numeric(parts[3]),
+        team_logo = ifelse(is.na(parts[3]) || parts[3] == "NA", "", parts[3]),
+        division_id = as.integer(parts[4]),
         stringsAsFactors = FALSE
       )
     })
@@ -235,9 +220,10 @@ calculate_standings <- function(games, divisions) {
     lapply(seq_len(nrow(team_info)), function(i) {
       team_id <- team_info$team_id[i]
       team_name <- team_info$team_name[i]
+      team_logo <- team_info$team_logo[i]
       div_id <- team_info$division_id[i]
 
-      # Get games for this team
+      # Get games for this team (ordered by game_id for chronological order)
       home_games <- games[
         games$home_team_id == team_id & games$division_id == div_id,
       ]
@@ -262,29 +248,77 @@ calculate_standings <- function(games, divisions) {
       ties <- home_ties + away_ties
 
       # Points for/against
-      points_scored <- sum(home_games$score_home, na.rm = TRUE) +
+      points_for <- sum(home_games$score_home, na.rm = TRUE) +
         sum(away_games$score_away, na.rm = TRUE)
       points_against <- sum(home_games$score_away, na.rm = TRUE) +
         sum(away_games$score_home, na.rm = TRUE)
-      point_diff <- points_scored - points_against
-      plus_minus <- round(point_diff / games_played, 1)
+      point_diff <- points_for - points_against
+      plus_minus <- if (games_played > 0) {
+        round(point_diff / games_played, 1)
+      } else {
+        0
+      }
 
       # Win percentage (ties count as 0.5 wins)
       win_pct <- if (games_played > 0) (wins + 0.5 * ties) / games_played else 0
 
+      # Calculate current streak
+      streak <- if (games_played > 0) {
+        # Combine and sort all games by start_time (chronological order)
+        all_team_games <- rbind(
+          data.frame(
+            start_time = home_games$start_time,
+            result = home_games$home_result,
+            stringsAsFactors = FALSE
+          ),
+          data.frame(
+            start_time = away_games$start_time,
+            result = away_games$away_result,
+            stringsAsFactors = FALSE
+          )
+        )
+
+        if (nrow(all_team_games) > 0) {
+          # Sort by start_time (chronological order)
+          all_team_games <- all_team_games[order(all_team_games$start_time), ]
+
+          # Get the results in order
+          results <- all_team_games$result
+
+          # Use rle to find runs of consecutive results
+          if (length(results) > 0) {
+            rle_results <- rle(results)
+            # Get the last (most recent) streak
+            last_streak_length <- rle_results$lengths[length(
+              rle_results$lengths
+            )]
+            last_streak_type <- rle_results$values[length(rle_results$values)]
+            paste0(last_streak_type, last_streak_length)
+          } else {
+            ""
+          }
+        } else {
+          ""
+        }
+      } else {
+        ""
+      }
+
       data.frame(
         team_id = team_id,
         team_name = team_name,
+        team_logo = team_logo,
         division_id = div_id,
         games_played = games_played,
         wins = wins,
         losses = losses,
         ties = ties,
         win_pct = win_pct,
-        points_scored = points_scored,
+        points_for = points_for,
         points_against = points_against,
         point_diff = point_diff,
         plus_minus = plus_minus,
+        streak = streak,
         stringsAsFactors = FALSE
       )
     })
@@ -384,51 +418,113 @@ calculate_head_to_head <- function(standings, games) {
   standings
 }
 
-#' Create a GT table for division standings
+#' Create a GT table for all division standings
 #'
-#' @param div_standings Standings data for one division
-#' @param div_name Division name
+#' @param standings Standings data for all divisions
+#' @param divisions Division information
 #' @return GT table object
 #'
 #' @noRd
-create_standings_table <- function(div_standings, div_name) {
-  # Add rank column
-  div_standings$rank <- seq_len(nrow(div_standings))
+create_standings_table <- function(standings, divisions) {
+  # Add division names to standings
+  standings <- standings |>
+    dplyr::left_join(
+      divisions |> dplyr::select(id, division_name = name, rank),
+      by = c("division_id" = "id")
+    ) |>
+    dplyr::arrange(rank, -win_pct, -h2h_advantage, -point_diff)
 
-  gt_table <- div_standings |>
+  # Add rank within division
+  standings <- standings |>
+    dplyr::group_by(division_id) |>
+    dplyr::mutate(rank = dplyr::row_number()) |>
+    dplyr::ungroup()
+
+  # Logo column
+  standings$logo_display <- sapply(
+    seq_len(nrow(standings)),
+    function(i) {
+      team_logo <- standings$team_logo[i]
+
+      if (!is.null(team_logo) && !is.na(team_logo) && nzchar(team_logo)) {
+        logo_url <- ifelse(
+          grepl("/", team_logo),
+          team_logo,
+          file.path(
+            Sys.getenv("STORAGE_BASE_URL"),
+            "images",
+            "logos",
+            team_logo
+          )
+        )
+        paste0(
+          '<img src="',
+          logo_url,
+          '" style="height: 1.2em; width: 1.2em; object-fit: contain;">'
+        )
+      } else {
+        # Empty div that preserves space
+        '<div style="height: 1.2em; width: 1.2em; display: inline-block;"></div>'
+      }
+    }
+  )
+
+  gt_table <- standings |>
     dplyr::select(
+      division_name,
+      logo_display,
       team_name,
-      games_played,
       wins,
       losses,
       ties,
       win_pct,
-      points_scored,
+      points_for,
       points_against,
-      point_diff,
-      plus_minus
+      plus_minus,
+      streak
     ) |>
-    gt::gt() |>
+    gt::gt(groupname_col = "division_name") |>
     gt::cols_label(
-      team_name = "Team",
-      games_played = "GP",
+      logo_display = "",
+      team_name = "",
       wins = "W",
       losses = "L",
       ties = "T",
-      win_pct = "W%",
-      points_scored = "PS",
-      points_against = "PSA",
-      point_diff = "PSD",
-      plus_minus = "+/-"
+      win_pct = "PCT",
+      points_for = "PF",
+      points_against = "PA",
+      plus_minus = "+/-",
+      streak = "STRK"
     ) |>
-    gt::fmt_percent(columns = win_pct, decimals = 0) |>
+    gt::fmt_number(
+      columns = win_pct,
+      decimals = 3,
+      drop_trailing_zeros = FALSE,
+      pattern = "{x}"
+    ) |>
+    gt::fmt(
+      columns = win_pct,
+      fns = function(x) {
+        formatted <- sprintf("%.3f", x)
+        # Remove leading zero for values less than 1
+        gsub("^0\\.", ".", formatted)
+      }
+    ) |>
+    gt::fmt_markdown(columns = logo_display) |>
+    gt::cols_width(
+      logo_display ~ px(35)
+    ) |>
+    gt::cols_align(
+      align = "center",
+      columns = logo_display
+    ) |>
     gt::data_color(
       columns = plus_minus,
       fn = scales::col_numeric(
         palette = c("#ff4444", "#ffffff", "#44ff44"),
         domain = c(
-          -1 * max(abs(div_standings$plus_minus)),
-          max(abs(div_standings$plus_minus))
+          -1 * max(abs(standings$plus_minus)),
+          max(abs(standings$plus_minus))
         )
       )
     ) |>
@@ -438,7 +534,8 @@ create_standings_table <- function(div_standings, div_name) {
     ) |>
     gt::tab_options(
       table.font.size = "14px",
-      column_labels.font.weight = "bold"
+      column_labels.font.weight = "bold",
+      row_group.font.weight = "bold"
     )
 
   # Convert to HTML for Shiny
