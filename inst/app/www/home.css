@@ -221,13 +221,11 @@
 
 /* Accessibility improvements */
 .home-container .card:focus-within {
-  outline: 2px solid var(--bs-primary);
-  outline-offset: 2px;
+  outline: none;
 }
 
 .home-container .btn-outline-primary:focus {
-  outline: 2px solid var(--bs-primary);
-  outline-offset: 2px;
+  outline: none;
 }
 
 @media (prefers-reduced-motion: reduce) {

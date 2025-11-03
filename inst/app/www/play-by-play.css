@@ -1,0 +1,116 @@
+/* Play-by-play Module Styles */
+
+:root {
+  --play-by-play-border-radius: 8px;
+  --play-by-play-padding: 20px;
+  --play-by-play-mobile-padding: 10px;
+  --play-by-play-table-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  --transition-duration: 0.2s;
+}
+
+.play-by-play-container {
+  padding: var(--play-by-play-padding);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.play-by-play-container h5 {
+  font-weight: 600;
+  margin-bottom: 1rem;
+  color: var(--bs-body-color);
+  border-bottom: 2px solid var(--bs-border-color);
+  padding-bottom: 0.5rem;
+}
+
+.play-by-play-container table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--bs-body-bg);
+  border-radius: var(--play-by-play-border-radius);
+  box-shadow: var(--play-by-play-table-shadow);
+  margin-bottom: 2rem;
+  border: 1px solid var(--bs-border-color);
+}
+
+.play-by-play-container tbody tr {
+  border-bottom: 1px solid var(--bs-border-color);
+  transition: background-color var(--transition-duration) ease;
+}
+
+.play-by-play-container tbody tr:hover {
+  background-color: var(--bs-secondary-bg);
+}
+
+.play-by-play-container tbody tr:last-child {
+  border-bottom: none;
+}
+
+.play-by-play-container td {
+  padding: 12px 16px;
+  color: var(--bs-body-color);
+  font-size: 0.9rem;
+  vertical-align: middle;
+}
+
+.play-by-play-container td:first-child {
+  font-weight: 600;
+  min-width: 120px;
+}
+
+.play-by-play-container td:nth-child(2) {
+  font-family: 'Courier New', monospace;
+  font-weight: 500;
+  color: var(--bs-secondary-color);
+  min-width: 80px;
+  text-align: center;
+}
+
+.play-by-play-container td:last-child {
+  width: 100%;
+}
+
+.no-events {
+  text-align: center;
+  padding: 40px;
+  color: var(--bs-secondary-color);
+  font-style: italic;
+  font-size: 1.1em;
+  background: var(--bs-body-bg);
+  border-radius: var(--play-by-play-border-radius);
+  border: 1px solid var(--bs-border-color);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .play-by-play-container {
+    padding: var(--play-by-play-mobile-padding);
+  }
+  
+  .play-by-play-container td {
+    padding: 8px 12px;
+    font-size: 0.8rem;
+  }
+  
+  .play-by-play-container td:first-child {
+    min-width: 100px;
+  }
+  
+  .play-by-play-container td:nth-child(2) {
+    min-width: 60px;
+  }
+}
+
+@media (max-width: 480px) {
+  .play-by-play-container td {
+    padding: 6px 8px;
+    font-size: 0.75rem;
+  }
+  
+  .play-by-play-container td:first-child {
+    min-width: 80px;
+  }
+  
+  .play-by-play-container td:nth-child(2) {
+    min-width: 50px;
+  }
+}

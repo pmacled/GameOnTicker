@@ -176,8 +176,7 @@
 }
 
 .timeout-strip:focus {
-  outline: 2px solid var(--bs-primary);
-  outline-offset: 2px;
+  outline: none;
 }
 
 .timeout-used {
@@ -192,8 +191,7 @@
 
 /* Accessibility improvements */
 .ticker-bar:focus-within {
-  outline: 2px solid var(--bs-primary);
-  outline-offset: 2px;
+  outline: none;
 }
 
 @media (prefers-reduced-motion: reduce) {

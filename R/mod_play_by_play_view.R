@@ -12,7 +12,10 @@
 mod_play_by_play_view_ui <- function(id) {
   ns <- NS(id)
   tagList(
-    uiOutput(ns("play_by_play_table"))
+    div(
+      class = "play-by-play-container",
+      uiOutput(ns("play_by_play_table"))
+    )
   )
 }
 
@@ -119,7 +122,7 @@ mod_play_by_play_view_server <- function(
     output$play_by_play_table <- renderUI({
       events <- pbp_data()
       if (is.null(events)) {
-        return(tags$em("No events yet."))
+        return(div(class = "no-events", "No events yet."))
       }
 
       # Sort halves descending (2nd, then 1st)
@@ -132,7 +135,6 @@ mod_play_by_play_view_server <- function(
           tagList(
             tags$h5(paste(c("1st", "2nd")[as.integer(hlf)], "Half")),
             tags$table(
-              style = "width:100%;",
               tags$tbody(
                 lapply(seq_len(nrow(h_events)), function(i) {
                   ev <- h_events[i, ]

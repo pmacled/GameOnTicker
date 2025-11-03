@@ -21,6 +21,7 @@
   padding: var(--ref-controls-padding);
   max-width: 640px;
   width: 100%;
+  margin: 0 auto;
   box-sizing: border-box;
   font-family: 'Segoe UI', Arial, sans-serif;
 }
@@ -89,15 +90,12 @@
 }
 
 .referee-control-button:focus {
-  outline: 2px solid var(--bs-primary);
-  outline-offset: 2px;
+  outline: none;
 }
 
 /* Accessibility improvements */
 .referee-controls-container:focus-within {
-  outline: 2px solid var(--bs-primary);
-  outline-offset: 2px;
-  border-radius: var(--ref-controls-border-radius);
+  outline: none;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -139,7 +137,7 @@
   }
   
   .referee-control-button:focus {
-    outline-width: 3px;
+    outline: none;
   }
 }
 
