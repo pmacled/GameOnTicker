@@ -122,13 +122,15 @@ mod_play_by_play_view_server <- function(
         return(tags$em("No events yet."))
       }
 
-      # Group by half
-      halves <- unique(events$half)
+      # Sort halves descending (2nd, then 1st)
+      halves <- sort(unique(events$half), decreasing = TRUE)
       tagList(
         lapply(halves, function(hlf) {
           h_events <- events[events$half == hlf, ]
+          # Reverse events within half
+          h_events <- h_events[rev(seq_len(nrow(h_events))), ]
           tagList(
-            tags$h4(paste(c("1st", "2nd")[hlf], "Half")),
+            tags$h5(paste(c("1st", "2nd")[as.integer(hlf)], "Half")),
             tags$table(
               style = "width:100%;",
               tags$tbody(
