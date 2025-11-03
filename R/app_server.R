@@ -21,9 +21,9 @@ app_server <- function(input, output, session) {
   )
 
   mod_referee_controls_server(
-    "referee_controls_1",
+    "referee_controls_sim",
     db_conn,
-    game_id = 170,
+    game_id = NA,
     user_rv = user_rv
   )
 }

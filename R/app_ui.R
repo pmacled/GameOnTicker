@@ -15,12 +15,12 @@ app_ui <- function(request) {
         bslib::input_dark_mode(id = "dark_mode", mode = "light")
       ),
       bslib::nav_panel(
-        "Referee Controls",
-        mod_referee_controls_ui("referee_controls_1")
-      ),
-      bslib::nav_panel(
         "Standings",
         mod_standings_ui("standings_1")
+      ),
+      bslib::nav_panel(
+        "Referee Simulator",
+        mod_referee_controls_ui("referee_controls_sim")
       ),
       bslib::nav_item(
         login_status_ui("login_1"),
