@@ -1,11 +1,24 @@
+:root {
+  --ticker-border-radius: 12px;
+  --ticker-padding: 8px 24px;
+  --ticker-mobile-padding: 6px 4px;
+  --timeout-strip-width: 20px;
+  --timeout-strip-height: 4px;
+  --timeout-strip-mobile-width: 12px;
+  --timeout-strip-mobile-height: 3px;
+  --team-logo-size: 48px;
+  --team-logo-mobile-size: 28px;
+  --transition-duration: 0.2s;
+}
+
 .ticker-bar {
   background: var(--bs-body-bg);
   color: var(--bs-body-color);
-  border-radius: 12px;
+  border-radius: var(--ticker-border-radius);
   box-shadow: none;
   font-family: 'Segoe UI', Arial, sans-serif;
   font-size: 1em;
-  padding: 8px 24px;
+  padding: var(--ticker-padding);
   max-width: 640px;
   min-width: 320px;
   width: 100%;
@@ -137,8 +150,8 @@
 }
 
 .team-logo {
-  width: 48px;
-  height: 48px;
+  width: var(--team-logo-size);
+  height: var(--team-logo-size);
   max-width: 100%;
   max-height: 100%;
   object-fit: contain;
@@ -154,22 +167,39 @@
 }
 
 .timeout-strip {
-  width: 20px;
-  height: 4px;
+  width: var(--timeout-strip-width);
+  height: var(--timeout-strip-height);
   border-radius: 4px;
   background: var(--bs-body-color);
   opacity: 1;
-  transition: background 0.2s;
+  transition: opacity var(--transition-duration) ease;
+}
+
+.timeout-strip:focus {
+  outline: 2px solid var(--bs-primary);
+  outline-offset: 2px;
 }
 
 .timeout-used {
-  background: #bbb;
+  background: var(--bs-secondary);
   opacity: 0.7;
 }
 
 .timeout-unused {
   background: var(--bs-body-color);
   opacity: 1;
+}
+
+/* Accessibility improvements */
+.ticker-bar:focus-within {
+  outline: 2px solid var(--bs-primary);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .timeout-strip {
+    transition: none;
+  }
 }
 
 .game-half {
@@ -209,7 +239,7 @@
 @media (max-width: 600px) {
   .ticker-bar {
     font-size: 1em;
-    padding: 6px 4px;
+    padding: var(--ticker-mobile-padding);
     min-width: 0;
   }
   .ticker-top-row {
@@ -230,12 +260,12 @@
     padding: 2px 0;
   }
   .timeout-strip {
-    width: 12px;
-    height: 3px;
+    width: var(--timeout-strip-mobile-width);
+    height: var(--timeout-strip-mobile-height);
   }
   .team-logo {
-    width: 28px;
-    height: 28px;
+    width: var(--team-logo-mobile-size);
+    height: var(--team-logo-mobile-size);
     margin: 0 2px;
   }
   .team-name {
