@@ -52,7 +52,7 @@
         "Authors@R": "\n    person(\"Nash\", \"Delcamp\", , \"nash.delcamp@gmail.com\", role = c(\"aut\", \"cre\"))",
         "Description": "Roles for administrators, referees, and viewers. Referees manage the game while tracking scoring events. Players and fans keep tabs on games in real time.",
         "License": "MIT + file LICENSE",
-        "Imports": "bslib, config, DBI, dplyr, golem, pkgload, RPostgres, shiny,\nshinyWidgets",
+        "Imports": "bslib, config, DBI, dplyr, golem, pkgload, RPostgres, shiny,\nshinyWidgets, tibble",
         "Encoding": "UTF-8",
         "RoxygenNote": "7.3.2",
         "URL": "https://github.com/pmacled/GameOnTicker",
@@ -65,16 +65,16 @@
         "RemoteRepo": "GameOnTicker",
         "RemoteUsername": "pmacled",
         "RemoteRef": "HEAD",
-        "RemoteSha": "ce3bfb236876c27267511ed142b5131d1ff478c8",
+        "RemoteSha": "21da0b4b6a2d3882e578464983a411e65bb0c0e5",
         "GithubRepo": "GameOnTicker",
         "GithubUsername": "pmacled",
         "GithubRef": "HEAD",
-        "GithubSHA1": "ce3bfb236876c27267511ed142b5131d1ff478c8",
+        "GithubSHA1": "21da0b4b6a2d3882e578464983a411e65bb0c0e5",
         "NeedsCompilation": "no",
-        "Packaged": "2025-11-01 13:37:16 UTC; nashd",
+        "Packaged": "2025-11-03 02:51:47 UTC; nashd",
         "Author": "Nash Delcamp [aut, cre]",
         "Maintainer": "Nash Delcamp <nash.delcamp@gmail.com>",
-        "Built": "R 4.4.2; ; 2025-11-01 13:37:16 UTC; windows"
+        "Built": "R 4.4.2; ; 2025-11-03 02:51:47 UTC; windows"
       }
     },
     "R6": {
