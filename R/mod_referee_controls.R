@@ -598,7 +598,7 @@ mod_referee_controls_server <- function(id, db_conn, game_id, user_rv) {
     score_home_rv <- reactiveVal(0)
     score_away_rv <- reactiveVal(0)
 
-    possession_rv <- reactiveVal("Home")
+    possession_rv <- reactiveVal(NULL)
 
     timeouts_home_rv <- reactiveVal(3)
     timeouts_away_rv <- reactiveVal(3)
@@ -764,36 +764,32 @@ mod_referee_controls_server <- function(id, db_conn, game_id, user_rv) {
 
     # observers ----
 
-    observe({
-      user_id <- user_rv()$id
-      if (nrow(last_event_init) == 0) {
-        if (user_is_game_ref(db_conn, game_id, user_id)) {
-          showModal(modalDialog(
-            title = "Coin Toss",
-            shinyWidgets::radioGroupButtons(
-              inputId = ns("toss_winner"),
-              label = "Who won the toss?",
-              choices = setNames(
-                c("Home", "Away"),
-                c(game_info$home_name, game_info$away_name)
-              ),
-              justified = TRUE
-            ),
-            shinyWidgets::radioGroupButtons(
-              inputId = ns("possession_team"),
-              label = "Who starts with possession?",
-              choices = setNames(
-                c("Home", "Away"),
-                c(game_info$home_name, game_info$away_name)
-              ),
-              justified = TRUE
-            ),
-            footer = tagList(
-              actionButton(ns("confirm_coin_toss"), "Start Game")
-            )
-          ))
-        }
-      }
+    # Show coin toss modal when Start Game button is clicked
+    observeEvent(input$start_game, {
+      showModal(modalDialog(
+        title = "Coin Toss",
+        shinyWidgets::radioGroupButtons(
+          inputId = ns("toss_winner"),
+          label = "Who won the toss?",
+          choices = setNames(
+            c("Home", "Away"),
+            c(game_info$home_name, game_info$away_name)
+          ),
+          justified = TRUE
+        ),
+        shinyWidgets::radioGroupButtons(
+          inputId = ns("possession_team"),
+          label = "Who starts with possession?",
+          choices = setNames(
+            c("Home", "Away"),
+            c(game_info$home_name, game_info$away_name)
+          ),
+          justified = TRUE
+        ),
+        footer = tagList(
+          actionButton(ns("confirm_coin_toss"), "Start Game")
+        )
+      ))
     })
 
     observe({
@@ -1095,6 +1091,20 @@ mod_referee_controls_server <- function(id, db_conn, game_id, user_rv) {
       user_id <- user_rv()$id
       if (!user_is_game_ref(db_conn, game_id, user_id)) {
         return(NULL)
+      }
+
+      # Show Start Game button for new games with no events
+      if (is.null(possession_rv())) {
+        return(
+          div(
+            class = "referee-controls-section",
+            actionButton(
+              ns("start_game"),
+              "Start Game",
+              class = "referee-control-button"
+            )
+          )
+        )
       }
 
       halftime_button <- actionButton(
