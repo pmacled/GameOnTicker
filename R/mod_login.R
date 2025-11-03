@@ -43,6 +43,9 @@ mod_login_server <- function(id, db_conn, user_rv) {
     })
 
     observeEvent(input$show_auth, {
+      # Clear any previous status messages when opening the modal
+      output$auth_status <- renderText("")
+
       showModal(modalDialog(
         shinyWidgets::radioGroupButtons(
           inputId = ns("auth_mode"),
@@ -78,7 +81,7 @@ mod_login_server <- function(id, db_conn, user_rv) {
         # Registration logic
         exists <- DBI::dbGetQuery(
           db_conn,
-          "SELECT COUNT(*) FROM public.user WHERE username = $1",
+          "SELECT COUNT(*) FROM public.user WHERE LOWER(username) = LOWER($1)",
           params = list(input$auth_username)
         )[[1]] >
           0
@@ -98,7 +101,7 @@ mod_login_server <- function(id, db_conn, user_rv) {
         hash <- digest::sha1(input$auth_password)
         user <- DBI::dbGetQuery(
           db_conn,
-          "SELECT * FROM public.user WHERE username = $1 AND password_hash = $2",
+          "SELECT * FROM public.user WHERE LOWER(username) = LOWER($1) AND password_hash = $2",
           params = list(input$auth_username, hash)
         )
         if (nrow(user) == 1) {
@@ -117,6 +120,8 @@ mod_login_server <- function(id, db_conn, user_rv) {
 
     observeEvent(input$sign_out, {
       user_rv(NULL)
+      # Clear any status messages when signing out
+      output$auth_status <- renderText("")
     })
   })
 }
