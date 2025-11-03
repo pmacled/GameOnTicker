@@ -888,32 +888,6 @@ mod_referee_controls_server <- function(id, db_conn, game_id, user_rv) {
       } else {
         start_clock()
       }
-      updateActionButton(
-        session,
-        "start_pause",
-        label = if (clock_running_rv()) "Pause Clock" else "Start Clock"
-      )
-      updateActionButton(
-        session,
-        "edit_clock",
-        disabled = clock_running_rv()
-      )
-    })
-
-    observe({
-      updateActionButton(
-        session,
-        "start_pause",
-        label = if (clock_running_rv()) "Pause Clock" else "Start Clock"
-      )
-    })
-
-    observe({
-      updateActionButton(
-        session,
-        "edit_clock",
-        disabled = clock_running_rv()
-      )
     })
 
     observeEvent(input$edit_clock, {
@@ -1134,12 +1108,13 @@ mod_referee_controls_server <- function(id, db_conn, game_id, user_rv) {
               class = "referee-controls-row",
               actionButton(
                 ns("start_pause"),
-                "Start Clock",
+                if (clock_running_rv()) "Pause Clock" else "Start Clock",
                 class = "referee-control-button"
               ),
               actionButton(
                 ns("edit_clock"),
                 "Edit Clock",
+                disabled = clock_running_rv(),
                 class = "referee-control-button"
               )
             ),
