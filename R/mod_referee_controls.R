@@ -13,7 +13,7 @@ mod_referee_controls_ui <- function(id) {
   ns <- NS(id)
   tagList(
     div(
-      style = "display: flex; flex-direction: column; gap: 8px; align-items: center;",
+      class = "referee-controls-container",
       mod_ticker_ui(ns("ticker")),
       uiOutput(ns("controls_ui"))
     ),
@@ -1099,12 +1099,14 @@ mod_referee_controls_server <- function(id, db_conn, game_id, user_rv) {
 
       halftime_button <- actionButton(
         ns("start_second_half"),
-        "Start Second Half"
+        "Start Second Half",
+        class = "referee-control-button"
       )
 
       finalize_game_button <- actionButton(
         ns("finalize_game"),
-        "Finalize Game"
+        "Finalize Game",
+        class = "referee-control-button"
       )
 
       if (timer_mode() %in% c("final")) {
@@ -1112,166 +1114,174 @@ mod_referee_controls_server <- function(id, db_conn, game_id, user_rv) {
       } else {
         tagList(
           div(
-            style = "display: flex; flex-direction: column; gap: 8px; align-items: center;",
-            actionButton(ns("undo_event"), "Undo Last Event"),
+            class = "referee-controls-section",
+            actionButton(
+              ns("undo_event"),
+              "Undo Last Event",
+              class = "referee-control-button"
+            ),
             div(
-              style = "display: flex; gap: 8px;",
+              class = "referee-controls-row",
               actionButton(
                 ns("start_pause"),
                 "Start Clock",
-                style = "width:180px;"
+                class = "referee-control-button"
               ),
               actionButton(
                 ns("edit_clock"),
                 "Edit Clock",
-                style = "width:180px;"
+                class = "referee-control-button"
               )
             ),
             div(
-              style = "display: flex; gap: 8px;",
+              class = "referee-controls-row",
               actionButton(
                 ns("start_pause_play_clock"),
                 "Start Play Clock",
-                style = "width:180px;"
+                class = "referee-control-button"
               ),
               actionButton(
                 ns("reset_play_clock"),
                 "Reset Play Clock",
-                style = "width:180px;"
+                class = "referee-control-button"
               )
             ),
             div(
-              style = "display: flex; gap: 8px;",
+              class = "referee-controls-row",
               actionButton(
                 ns("timeout_home"),
                 "Home Timeout",
-                style = "width:180px;"
+                class = "referee-control-button"
               ),
               actionButton(
                 ns("timeout_away"),
                 "Away Timeout",
-                style = "width:180px;"
+                class = "referee-control-button"
               )
             ),
             if (is.na(down_rv())) {
               # PAT options
               div(
-                style = "display: flex; flex-direction: column; gap: 8px; align-items: center;",
+                class = "referee-controls-section",
                 if (timer_mode() == "halftime") halftime_button,
                 if (timer_mode() == "ended") finalize_game_button,
-                div(tags$strong("Offense")),
+                div(class = "referee-controls-section-title", "Offense"),
                 div(
-                  style = "display: flex; gap: 8px;",
+                  class = "referee-controls-row",
                   actionButton(
                     ns("pat1_good"),
                     "1-pt Good",
-                    style = "width:180px;"
+                    class = "referee-control-button"
                   ),
                   actionButton(
                     ns("pat1_miss"),
                     "1-pt Miss",
-                    style = "width:180px;"
+                    class = "referee-control-button"
                   )
                 ),
                 div(
-                  style = "display: flex; gap: 8px;",
+                  class = "referee-controls-row",
                   actionButton(
                     ns("pat2_good"),
                     "2-pt Good",
-                    style = "width:180px;"
+                    class = "referee-control-button"
                   ),
                   actionButton(
                     ns("pat2_miss"),
                     "2-pt Miss",
-                    style = "width:180px;"
+                    class = "referee-control-button"
                   )
                 ),
                 div(
-                  style = "display: flex; gap: 8px;",
+                  class = "referee-controls-row",
                   actionButton(
                     ns("pat3_good"),
                     "3-pt Good",
-                    style = "width:180px;"
+                    class = "referee-control-button"
                   ),
                   actionButton(
                     ns("pat3_miss"),
                     "3-pt Miss",
-                    style = "width:180px;"
+                    class = "referee-control-button"
                   )
                 ),
-                div(tags$strong("Defense")),
+                div(class = "referee-controls-section-title", "Defense"),
                 div(
-                  style = "display: flex; gap: 8px;",
+                  class = "referee-controls-row",
                   actionButton(
                     ns("pat_def"),
                     "Defensive Return",
-                    style = "width:180px;"
+                    class = "referee-control-button"
                   )
                 )
               )
             } else {
               # Regular play options
               div(
-                style = "display: flex; flex-direction: column; gap: 8px; align-items: center;",
+                class = "referee-controls-section",
                 if (timer_mode() == "halftime") halftime_button,
                 if (timer_mode() == "ended") finalize_game_button,
-                div(tags$strong("Offense")),
+                div(class = "referee-controls-section-title", "Offense"),
                 div(
-                  style = "display: flex; gap: 8px;",
+                  class = "referee-controls-row",
                   actionButton(
                     ns("guy_play"),
                     "Guy Play",
-                    style = "width:180px;"
+                    class = "referee-control-button"
                   ),
                   actionButton(
                     ns("girl_play"),
                     "Girl Play",
-                    style = "width:180px;"
+                    class = "referee-control-button"
                   )
                 ),
                 div(
-                  style = "display: flex; gap: 8px;",
+                  class = "referee-controls-row",
                   actionButton(
                     ns("guy_td"),
                     "Guy TD",
-                    style = "width:180px;"
+                    class = "referee-control-button"
                   ),
                   actionButton(
                     ns("girl_td"),
                     "Girl TD",
-                    style = "width:180px;"
+                    class = "referee-control-button"
                   )
                 ),
                 div(
-                  style = "display: flex; gap: 8px;",
+                  class = "referee-controls-row",
                   actionButton(
                     ns("punt"),
                     "Punt",
                     disabled = !(down_rv() < 6 && girl_plays_rv() > 0),
-                    style = "width:180px;"
+                    class = "referee-control-button"
                   )
                 ),
-                div(tags$strong("Defense")),
+                div(class = "referee-controls-section-title", "Defense"),
                 div(
-                  style = "display: flex; gap: 8px;",
+                  class = "referee-controls-row",
                   actionButton(
                     ns("turnover"),
                     "Turnover",
-                    style = "width:180px;"
+                    class = "referee-control-button"
                   ),
-                  actionButton(ns("safety"), "Safety", style = "width:180px;")
+                  actionButton(
+                    ns("safety"),
+                    "Safety",
+                    class = "referee-control-button"
+                  )
                 ),
                 div(
-                  style = "display: flex; gap: 8px;",
+                  class = "referee-controls-row",
                   actionButton(
                     ns("guy_td_def"),
                     "Guy TD (Def)",
-                    style = "width:180px;"
+                    class = "referee-control-button"
                   ),
                   actionButton(
                     ns("girl_td_def"),
                     "Girl TD (Def)",
-                    style = "width:180px;"
+                    class = "referee-control-button"
                   )
                 )
               )
