@@ -521,7 +521,7 @@ create_standings_table <- function(standings, divisions) {
     gt::data_color(
       columns = plus_minus,
       fn = scales::col_numeric(
-        palette = c("#ff4444", "#ffffff", "#44ff44"),
+        palette = c("#b91c1c", "#ececec54", "#059669"),
         domain = c(
           -1 * max(abs(standings$plus_minus)),
           max(abs(standings$plus_minus))
@@ -536,6 +536,30 @@ create_standings_table <- function(standings, divisions) {
       table.font.size = "14px",
       column_labels.font.weight = "bold",
       row_group.font.weight = "bold"
+    ) |>
+    gt::opt_css(
+      css = "
+      .gt_table {
+        background-color: transparent !important;
+        color: var(--bs-body-color, currentColor) !important;
+      }
+      .gt_col_heading {
+        background-color: transparent !important;
+        color: var(--bs-body-color, currentColor) !important;
+      }
+      .gt_group_heading {
+        background-color: transparent !important;
+        color: var(--bs-body-color, currentColor) !important;
+      }
+      /* Only make rows transparent if they don't have inline background styles */
+      .gt_row:not([style*='background-color']) {
+        background-color: transparent !important;
+      }
+      /* Apply theme color to table cells without data colors */
+      .gt_table td:not([style*='background-color']) {
+        color: var(--bs-body-color, currentColor) !important;
+      }
+      "
     )
 
   # Convert to HTML for Shiny
