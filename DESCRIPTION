@@ -11,8 +11,10 @@ Imports:
     DBI,
     dplyr,
     golem,
+    gt,
     pkgload,
     RPostgres,
+    scales,
     shiny,
     shinyWidgets,
     tibble

@@ -18,6 +18,10 @@ app_ui <- function(request) {
         "Referee Controls",
         mod_referee_controls_ui("referee_controls_1")
       ),
+      bslib::nav_panel(
+        "Standings",
+        mod_standings_ui("standings_1")
+      ),
       bslib::nav_item(
         login_status_ui("login_1"),
       ),
@@ -54,6 +58,11 @@ golem_add_external_resources <- function() {
       rel = "stylesheet",
       type = "text/css",
       href = "referee-controls.css"
+    ),
+    tags$link(
+      rel = "stylesheet",
+      type = "text/css",
+      href = "www/standings.css"
     )
   )
 }
