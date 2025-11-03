@@ -12,7 +12,15 @@ app_server <- function(input, output, session) {
 
   user_rv <- reactiveVal()
 
+  # Global user login status for conditional panels
+  output$user_logged_in_global <- reactive({
+    !is.null(user_rv())
+  })
+  outputOptions(output, "user_logged_in_global", suspendWhenHidden = FALSE)
+
   mod_login_server("login_1", db_conn, user_rv)
+
+  mod_home_server("home_1", db_conn, user_rv)
 
   mod_standings_server(
     "standings_1",
