@@ -370,9 +370,9 @@ If both teams have illegal players, both teams give up points.
 
       v. A pass attempt at a female player who has gone out of bounds and is now an ineligible receiver.
 
-         1. However, if another receiver or defender touches the ball first and the female player CATCHES the ball, it would count as female involvement play because after the touch by others she is now eligible and the catch follows rule 5,a, iv above.
+      1. However, if another receiver or defender touches the ball first and the female player CATCHES the ball, it would count as female involvement play because after the touch by others she is now eligible and the catch follows rule 5,a, iv above.
          
-         2. If she were to drop said pass that was tipped by a male player on her team it would still NOT count as female involvement if touched for similar reasons as rule 5, b, iii above.
+      2. If she were to drop said pass that was tipped by a male player on her team it would still NOT count as female involvement if touched for similar reasons as rule 5, b, iii above.
 
 6. If a team can only field four (4) male players and zero (0) female players, then their offense has only four (4) downs to score.
 
