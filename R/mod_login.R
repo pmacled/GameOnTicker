@@ -30,6 +30,40 @@ mod_login_server <- function(id, db_conn, user_rv) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
 
+    # Check for stored login on module initialization
+    observe({
+      session$sendCustomMessage("getStoredUser", "")
+    })
+
+    # Handle stored user data from localStorage
+    observeEvent(input$storedUser, {
+      if (!is.null(input$storedUser) && input$storedUser != "") {
+        tryCatch(
+          {
+            stored_data <- jsonlite::fromJSON(input$storedUser)
+            if (!is.null(stored_data$user_id)) {
+              # Verify user still exists in database
+              user <- DBI::dbGetQuery(
+                db_conn,
+                "SELECT * FROM public.user WHERE id = $1",
+                params = list(as.integer(stored_data$user_id))
+              )
+              if (nrow(user) == 1) {
+                user_rv(user)
+              } else {
+                # User no longer exists, clear storage
+                session$sendCustomMessage("clearStoredUser", "")
+              }
+            }
+          },
+          error = function(e) {
+            # Invalid stored data, clear it
+            session$sendCustomMessage("clearStoredUser", "")
+          }
+        )
+      }
+    })
+
     output$login_status <- renderUI({
       if (is.null(user_rv())) {
         actionLink(ns("show_auth"), "Login/Register", class = "nav-link")
@@ -57,6 +91,7 @@ mod_login_server <- function(id, db_conn, user_rv) {
         ),
         textInput(ns("auth_username"), "Username", width = "150px"),
         passwordInput(ns("auth_password"), "Password", width = "150px"),
+        checkboxInput(ns("remember_me"), "Keep me signed in", value = TRUE),
         actionButton(
           ns("auth_submit"),
           "Submit",
@@ -106,6 +141,15 @@ mod_login_server <- function(id, db_conn, user_rv) {
         )
         if (nrow(user) == 1) {
           user_rv(user)
+          # Store user info in localStorage for persistent login (only if remember_me is checked)
+          if (isTRUE(input$remember_me)) {
+            user_data <- list(
+              user_id = user$id[1],
+              username = user$username[1]
+            )
+            json_data <- jsonlite::toJSON(user_data)
+            session$sendCustomMessage("storeUser", json_data)
+          }
           output$auth_status <- renderText("Login successful.")
           removeModal()
         } else {
@@ -120,6 +164,8 @@ mod_login_server <- function(id, db_conn, user_rv) {
 
     observeEvent(input$sign_out, {
       user_rv(NULL)
+      # Clear stored user data from localStorage
+      session$sendCustomMessage("clearStoredUser", "")
       # Clear any status messages when signing out
       output$auth_status <- renderText("")
     })
