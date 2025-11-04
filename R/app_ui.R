@@ -47,18 +47,7 @@ app_ui <- function(request) {
       ),
       bslib::nav_panel(
         "Rules",
-        mod_rules_ui(
-          "rules_1",
-          title = "Rules Assistant",
-          description = "Ask me anything about the co-ed touch football rules.",
-          quick_questions = list(
-            "What are the female involvement requirements?",
-            "How does scoring work?",
-            "What are the timeout rules?",
-            "How does overtime work?",
-            "What are the common penalties?"
-          )
-        )
+        mod_rules_ui("rules_1")
       ),
       bslib::nav_panel(
         "Referee Simulator",

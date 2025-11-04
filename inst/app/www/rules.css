@@ -4,6 +4,8 @@
   --rules-container-max-width: 1000px;
   --rules-padding: 20px;
   --rules-mobile-padding: 15px;
+  --rules-border-radius: 8px;
+  --transition-duration: 0.3s;
 }
 
 .rules-container {
@@ -12,9 +14,118 @@
   padding: var(--rules-padding);
 }
 
+.rules-header {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 15px;
+  border-bottom: 2px solid var(--bs-border-color);
+}
+
+.rules-content {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.rules-content h1,
+.rules-content h2,
+.rules-content h3,
+.rules-content h4,
+.rules-content h5,
+.rules-content h6 {
+  color: var(--bs-body-color);
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  font-weight: 600;
+}
+
+.rules-content p {
+  margin-bottom: 1rem;
+  line-height: 1.6;
+  color: var(--bs-body-color);
+}
+
+.rules-content ul,
+.rules-content ol {
+  margin-bottom: 1rem;
+  padding-left: 1.5rem;
+}
+
+.rules-content li {
+  margin-bottom: 0.5rem;
+  color: var(--bs-body-color);
+}
+
+.rules-content blockquote {
+  background-color: var(--bs-secondary-bg);
+  border-left: 4px solid var(--bs-border-color);
+  margin: 1rem 0;
+  padding: 1rem;
+  border-radius: var(--rules-border-radius);
+  border: 1px solid var(--bs-border-color);
+}
+
+.rules-content table {
+  width: 100%;
+  margin-bottom: 1rem;
+  border-collapse: collapse;
+  background-color: var(--bs-body-bg);
+}
+
+.rules-content th,
+.rules-content td {
+  padding: 0.75rem;
+  border: 1px solid var(--bs-border-color);
+  color: var(--bs-body-color);
+}
+
+.rules-content th {
+  background-color: var(--bs-secondary-bg);
+  font-weight: 600;
+}
+
+/* Rules Assistant Styles */
+.rules-assistant-container {
+  max-width: var(--rules-container-max-width);
+  margin: 0 auto;
+  padding: var(--rules-padding);
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
-  .rules-container {
+  .rules-container,
+  .rules-assistant-container {
     padding: var(--rules-mobile-padding);
+  }
+  
+  .rules-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+}
+
+/* Button styling to match other modules */
+.rules-header .btn {
+  border-radius: 0.375rem;
+  padding: 0.5rem 1rem;
+  font-weight: 500;
+  transition: all var(--transition-duration) ease;
+}
+
+.rules-header .btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.15);
+}
+
+/* Accessibility improvements */
+.rules-container:focus-within {
+  outline: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rules-header .btn {
+    transition: none;
   }
 }
