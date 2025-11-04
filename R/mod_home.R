@@ -39,7 +39,10 @@ mod_home_ui <- function(id) {
       uiOutput(ns("favorite_teams_section")),
 
       # Standings section for favorite team divisions
-      uiOutput(ns("favorite_standings_section"))
+      uiOutput(ns("favorite_standings_section")),
+
+      # Schedule section for favorite teams
+      uiOutput(ns("favorite_schedule_section"))
     )
   )
 }
@@ -378,6 +381,61 @@ mod_home_server <- function(id, db_conn, user_rv) {
         )
       )
     })
+
+    # Render schedule section for favorite teams
+    output$favorite_schedule_section <- renderUI({
+      if (is.null(user_rv())) {
+        return(NULL)
+      }
+
+      favorites <- user_favorites()
+
+      if (nrow(favorites) == 0) {
+        return(NULL)
+      }
+
+      div(
+        class = "mb-4",
+        h4("Favorite Team Schedule", class = "text-info"),
+        div(
+          class = "schedule-wrapper",
+          mod_schedule_ui(ns("favorite_schedule"))
+        )
+      )
+    })
+
+    # Initialize schedule module server for favorite teams
+    # Get the league_id - you may need to adjust this based on your app's league structure
+    league_id <- reactive({
+      league_query <- "SELECT id FROM public.league LIMIT 1"
+      league_result <- DBI::dbGetQuery(db_conn, league_query)
+
+      if (nrow(league_result) > 0) {
+        as.integer(league_result$id[1])
+      } else {
+        NULL
+      }
+    })
+
+    # Get favorite team IDs as reactive
+    favorite_team_ids <- reactive({
+      req(user_rv())
+      favorites <- user_favorites()
+
+      if (nrow(favorites) > 0) {
+        as.integer(favorites$id)
+      } else {
+        NULL
+      }
+    })
+
+    # Call the schedule module server once with reactive inputs
+    mod_schedule_server(
+      "favorite_schedule",
+      db_conn,
+      league_id,
+      default_teams = favorite_team_ids
+    )
 
     # Render standings section for favorite team divisions
     output$favorite_standings_section <- renderUI({

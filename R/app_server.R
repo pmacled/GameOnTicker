@@ -28,6 +28,13 @@ app_server <- function(input, output, session) {
     league_id = 1
   )
 
+  mod_schedule_server(
+    "schedule_1",
+    db_conn = db_conn,
+    league_id = 1,
+    default_teams = reactive(NULL)
+  )
+
   mod_referee_controls_server(
     "referee_controls_sim",
     db_conn,

@@ -219,6 +219,25 @@
   }
 }
 
+/* Schedule Wrapper */
+.home-container .schedule-wrapper .schedule-container {
+  padding: 0;
+  max-width: none;
+}
+
+.home-container .schedule-wrapper .schedule-filter-controls {
+  margin-bottom: 1rem;
+}
+
+.home-container .schedule-wrapper .filter-button-container .btn {
+  font-size: 0.875rem;
+  padding: 0.375rem 0.75rem;
+}
+
+.home-container .schedule-wrapper .active-filters-summary .badge {
+  font-size: 0.75rem;
+}
+
 /* Accessibility improvements */
 .home-container .card:focus-within {
   outline: none;

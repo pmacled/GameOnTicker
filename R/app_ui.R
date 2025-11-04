@@ -42,6 +42,10 @@ app_ui <- function(request) {
         mod_standings_ui("standings_1")
       ),
       bslib::nav_panel(
+        "Schedule",
+        mod_schedule_ui("schedule_1")
+      ),
+      bslib::nav_panel(
         "Referee Simulator",
         mod_referee_controls_ui("referee_controls_sim")
       ),
@@ -88,6 +92,11 @@ golem_add_external_resources <- function() {
       rel = "stylesheet",
       type = "text/css",
       href = "www/standings.css"
+    ),
+    tags$link(
+      rel = "stylesheet",
+      type = "text/css",
+      href = "www/schedule.css"
     )
   )
 }
