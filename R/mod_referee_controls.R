@@ -81,42 +81,72 @@ mod_referee_controls_server <- function(id, db_conn, game_id, user_rv) {
     # function to handle recording of event to database.
     # events are expected to be recorded prior to points scored, timeout used, etc.
     record_event <- function(event_type) {
-      if (!global_record_flag) {
-        return(invisible(NULL))
-      }
-      DBI::dbExecute(
-        db_conn,
-        "INSERT INTO football_event (game_id, half, clock_ms, down, girl_plays, possession, score_home, score_away, timeouts_home, timeouts_away, type, points, scored_by)
-   VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)",
-        params = list(
-          game_id,
-          switch(
-            timer_mode(),
-            first_half = 1,
-            halftime = 1,
-            second_half = 2,
-            ended = 2,
-            final = 2
-          ),
-          switch(
-            timer_mode(),
-            halftime = 0,
-            ended = 0,
-            final = 0,
-            clock_ms_rv()
-          ),
-          down_rv(),
-          girl_plays_rv(),
-          possession_rv(),
-          score_home_rv(),
-          score_away_rv(),
-          timeouts_home_rv(),
-          timeouts_away_rv(),
-          event_type,
-          get_event_points(event_type),
-          get_scoring_team(event_type)
-        )
+      half_val <- switch(
+        timer_mode(),
+        first_half = 1,
+        halftime = 1,
+        second_half = 2,
+        ended = 2,
+        final = 2
       )
+
+      clock_val <- switch(
+        timer_mode(),
+        halftime = 0,
+        ended = 0,
+        final = 0,
+        clock_ms_rv()
+      )
+
+      if (global_record_flag) {
+        # Record to database for real games
+        DBI::dbExecute(
+          db_conn,
+          "INSERT INTO football_event (game_id, half, clock_ms, down, girl_plays, possession, score_home, score_away, timeouts_home, timeouts_away, type, points, scored_by)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)",
+          params = list(
+            game_id,
+            half_val,
+            clock_val,
+            down_rv(),
+            girl_plays_rv(),
+            possession_rv(),
+            score_home_rv(),
+            score_away_rv(),
+            timeouts_home_rv(),
+            timeouts_away_rv(),
+            event_type,
+            get_event_points(event_type),
+            get_scoring_team(event_type)
+          )
+        )
+      } else {
+        # Store in reactive data frame for simulated games
+        new_event <- data.frame(
+          id = nrow(simulated_events_df()) + 1,
+          created_at = Sys.time(),
+          game_id = NA,
+          type = event_type,
+          half = half_val,
+          clock_ms = clock_val,
+          down = down_rv(),
+          girl_plays = girl_plays_rv(),
+          possession = possession_rv(),
+          score_home = score_home_rv(),
+          score_away = score_away_rv(),
+          timeouts_home = timeouts_home_rv(),
+          timeouts_away = timeouts_away_rv(),
+          points = get_event_points(event_type),
+          scored_by = get_scoring_team(event_type),
+          logger_id = NA,
+          home_team_id = game_info$home_team_id,
+          away_team_id = game_info$away_team_id,
+          home_team_name = game_info$home_name,
+          away_team_name = game_info$away_name,
+          stringsAsFactors = FALSE
+        )
+        simulated_events_df(rbind(simulated_events_df(), new_event))
+      }
     }
 
     confirm_coin_toss <- function(record = TRUE) {
@@ -607,6 +637,31 @@ mod_referee_controls_server <- function(id, db_conn, game_id, user_rv) {
     # intended for replaying the last event when reloading the app.
     call_event_rv <- reactiveVal(FALSE)
 
+    # reactive data frame to store events for simulated games (when game_id is NA)
+    simulated_events_df <- reactiveVal(data.frame(
+      id = integer(),
+      created_at = as.POSIXct(character()),
+      game_id = integer(),
+      type = character(),
+      half = integer(),
+      clock_ms = integer(),
+      down = integer(),
+      girl_plays = integer(),
+      possession = character(),
+      score_home = integer(),
+      score_away = integer(),
+      timeouts_home = integer(),
+      timeouts_away = integer(),
+      points = integer(),
+      scored_by = character(),
+      logger_id = integer(),
+      home_team_id = integer(),
+      away_team_id = integer(),
+      home_team_name = character(),
+      away_team_name = character(),
+      stringsAsFactors = FALSE
+    ))
+
     if (
       nrow(game) == 1 && !is.na(game$home_result) && !is.na(game$away_result)
     ) {
@@ -708,6 +763,28 @@ mod_referee_controls_server <- function(id, db_conn, game_id, user_rv) {
         format_record(wins, losses, ties)
       )
 
+      # Get events data for both real and simulated games
+      if (global_record_flag) {
+        # Real game: query database
+        events <- DBI::dbGetQuery(
+          db_conn,
+          "SELECT e.*, 
+            g.home_team_id, g.away_team_id,
+            th.name AS home_team_name,
+            ta.name AS away_team_name
+     FROM football_event e
+     LEFT JOIN game g ON e.game_id = g.id
+     LEFT JOIN team th ON g.home_team_id = th.id
+     LEFT JOIN team ta ON g.away_team_id = ta.id
+     WHERE e.game_id = $1
+     ORDER BY e.id ASC",
+          params = list(game_id)
+        )
+      } else {
+        # Simulated game: use reactive data frame
+        events <- simulated_events_df()
+      }
+
       list(
         home_logo = game_info$home_logo,
         away_logo = game_info$away_logo,
@@ -721,7 +798,8 @@ mod_referee_controls_server <- function(id, db_conn, game_id, user_rv) {
         score_away = as.integer(score_away_rv()),
         possession = possession_rv(),
         half = half_label,
-        down_girl_plays_available = down_girl_plays_available
+        down_girl_plays_available = down_girl_plays_available,
+        events = events
       )
     })
 
@@ -757,8 +835,6 @@ mod_referee_controls_server <- function(id, db_conn, game_id, user_rv) {
 
     mod_play_by_play_view_server(
       "play_by_play_view",
-      db_conn = db_conn,
-      game_id = game_id,
       game_data = ticker_game_data
     )
 
@@ -1024,38 +1100,74 @@ mod_referee_controls_server <- function(id, db_conn, game_id, user_rv) {
     })
 
     observeEvent(input$undo_event, {
-      # the event that will be deleted and the state we are restoring to
-      last_event <- DBI::dbGetQuery(
-        db_conn,
-        "SELECT * FROM football_event WHERE game_id = $1 ORDER BY id DESC LIMIT 1",
-        params = list(game_id)
-      )
-      # Delete last event from database
-      DBI::dbExecute(
-        db_conn,
-        "DELETE FROM football_event WHERE id = (
-    SELECT id FROM football_event WHERE game_id = $1 ORDER BY id DESC LIMIT 1
-  )",
-        params = list(game_id)
-      )
-      if (nrow(last_event) == 1) {
-        # Restore state from previous event (not including game clock)
-        down_rv(last_event$down)
-        possession_rv(last_event$possession)
-        score_home_rv(last_event$score_home)
-        score_away_rv(last_event$score_away)
-        girl_plays_rv(last_event$girl_plays)
-        timeouts_home_rv(last_event$timeouts_home)
-        timeouts_away_rv(last_event$timeouts_away)
+      if (global_record_flag) {
+        # Handle real game: interact with database
+        # the event that will be deleted and the state we are restoring to
+        last_event <- DBI::dbGetQuery(
+          db_conn,
+          "SELECT * FROM football_event WHERE game_id = $1 ORDER BY id DESC LIMIT 1",
+          params = list(game_id)
+        )
+        # Delete last event from database
+        DBI::dbExecute(
+          db_conn,
+          "DELETE FROM football_event WHERE id = (
+      SELECT id FROM football_event WHERE game_id = $1 ORDER BY id DESC LIMIT 1
+    )",
+          params = list(game_id)
+        )
+        if (nrow(last_event) == 1) {
+          # Restore state from previous event (not including game clock)
+          down_rv(last_event$down)
+          possession_rv(last_event$possession)
+          score_home_rv(last_event$score_home)
+          score_away_rv(last_event$score_away)
+          girl_plays_rv(last_event$girl_plays)
+          timeouts_home_rv(last_event$timeouts_home)
+          timeouts_away_rv(last_event$timeouts_away)
+        } else {
+          # No events left, reset to initial state
+          down_rv(1)
+          possession_rv("Home")
+          score_home_rv(0)
+          score_away_rv(0)
+          girl_plays_rv(0)
+          timeouts_home_rv(3)
+          timeouts_away_rv(3)
+        }
       } else {
-        # No events left, reset to initial state
-        down_rv(1)
-        possession_rv("Home")
-        score_home_rv(0)
-        score_away_rv(0)
-        girl_plays_rv(0)
-        timeouts_home_rv(3)
-        timeouts_away_rv(3)
+        # Handle simulated game: remove from reactive data frame
+        current_events <- simulated_events_df()
+        if (nrow(current_events) > 0) {
+          # Remove the last event
+          current_events <- current_events[
+            -nrow(current_events),
+            ,
+            drop = FALSE
+          ]
+          simulated_events_df(current_events)
+
+          if (nrow(current_events) > 0) {
+            # Restore state from previous event
+            prev_event <- current_events[nrow(current_events), ]
+            down_rv(prev_event$down)
+            possession_rv(prev_event$possession)
+            score_home_rv(prev_event$score_home)
+            score_away_rv(prev_event$score_away)
+            girl_plays_rv(prev_event$girl_plays)
+            timeouts_home_rv(prev_event$timeouts_home)
+            timeouts_away_rv(prev_event$timeouts_away)
+          } else {
+            # No events left, reset to initial state
+            down_rv(1)
+            possession_rv("Home")
+            score_home_rv(0)
+            score_away_rv(0)
+            girl_plays_rv(0)
+            timeouts_home_rv(3)
+            timeouts_away_rv(3)
+          }
+        }
       }
     })
 

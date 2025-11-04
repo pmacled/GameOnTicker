@@ -3,8 +3,6 @@
 #' @description A shiny Module.
 #'
 #' @param id,input,output,session Internal parameters for {shiny}.
-#' @param game_id The game to display events for.
-#' @param db_conn The database connection.
 #'
 #' @noRd
 #'
@@ -21,12 +19,13 @@ mod_play_by_play_view_ui <- function(id) {
 
 #' play_by_play_view Server Functions
 #'
+#' @param id,input,output,session Internal parameters for {shiny}.
+#' @param game_data Reactive containing game data including events.
+#'
 #' @noRd
 mod_play_by_play_view_server <- function(
   id,
-  db_conn,
-  game_id,
-  game_data = NULL
+  game_data
 ) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
@@ -68,26 +67,10 @@ mod_play_by_play_view_server <- function(
 
     # play-by-play data
     pbp_data <- reactive({
-      if (is.null(game_data)) {
-        invalidateLater(10000, session)
-      } else {
-        req(game_data())
-      }
-      events <- DBI::dbGetQuery(
-        db_conn,
-        "SELECT e.*, 
-          g.home_team_id, g.away_team_id,
-          th.name AS home_team_name,
-          ta.name AS away_team_name
-   FROM football_event e
-   LEFT JOIN game g ON e.game_id = g.id
-   LEFT JOIN team th ON g.home_team_id = th.id
-   LEFT JOIN team ta ON g.away_team_id = ta.id
-   WHERE e.game_id = $1
-   ORDER BY e.id ASC",
-        params = list(game_id)
-      )
-      if (nrow(events) == 0) {
+      req(game_data())
+
+      events <- game_data()$events
+      if (is.null(events) || nrow(events) == 0) {
         return(NULL)
       }
 
@@ -157,4 +140,4 @@ mod_play_by_play_view_server <- function(
 # mod_play_by_play_view_ui("play_by_play_view_1")
 
 ## To be copied in the server
-# mod_play_by_play_view_server("play_by_play_view_1", db_conn, game_id)
+# mod_play_by_play_view_server("play_by_play_view_1", game_data = game_data)
