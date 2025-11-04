@@ -592,21 +592,21 @@ If both teams have illegal players, both teams give up points.
 
 2. The league has a zero tolerance policy regarding fighting. The player(s) fighting will be immediately and indefinitely expelled from the league and/or the team forfeits the game and/or season.
 
-3. **Player Ejection**
+3. Player Ejection
 
    If an official ejects a player from a game, the player will not be eligible to play in the next scheduled game for which he/she is a team member.
 
-   a. **Example 1:** A player is a member of multiple teams (i.e. different divisions) in the same league, Team A and Team B. Team B is playing at 10a, and the player gets ejected for swearing at the referee. Team B has no other games that day, but Team A has a game scheduled for 2p. The player will not be eligible to play in the 2p game.
+   a. Example 1: A player is a member of multiple teams (i.e. different divisions) in the same league, Team A and Team B. Team B is playing at 10a, and the player gets ejected for swearing at the referee. Team B has no other games that day, but Team A has a game scheduled for 2p. The player will not be eligible to play in the 2p game.
 
-   b. **Example 2:** A player is a member of multiple teams in the same league, Team C and Team D. Team D has a double header at 9a and 11a. Team C has a game at 10a. The player is ejected from the 9a game, for repeated and excessive illegal contact offenses. The player will not be able to play the 10a game with Team C. However, the player will be eligible for the 11a game with Team D.
+   b. Example 2: A player is a member of multiple teams in the same league, Team C and Team D. Team D has a double header at 9a and 11a. Team C has a game at 10a. The player is ejected from the 9a game, for repeated and excessive illegal contact offenses. The player will not be able to play the 10a game with Team C. However, the player will be eligible for the 11a game with Team D.
 
    c. **NOTE:** This does not apply to a player who is asked to sit for a play or a series of plays. The player must be ejected for the remainder of the game for this to take effect.
 
-4. **Schedule Requests**
+4. Schedule Requests
 
    We will do our best to honor all schedule requests but sometimes it is not possible. Bye weeks will be given highest priority. Early Games (10 AM - 1 PM) and Late Games (1PM - 4PM) game requests will be given 2nd highest priority.
 
-5. **Rescheduling of Games**
+5. Rescheduling of Games
 
    If you elect to reschedule a game (with both parties in agreement and other logistics being covered), the new date and time must be known at the time of the reschedule. You may not have an if/then/maybe or otherwise open-ended game assignment.
 
