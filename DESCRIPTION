@@ -11,6 +11,7 @@ Imports:
     DBI,
     digest,
     dplyr,
+    ellmer,
     golem,
     gt,
     jsonlite,
@@ -18,6 +19,7 @@ Imports:
     RPostgres,
     scales,
     shiny,
+    shinychat,
     shinyWidgets,
     tibble
 Encoding: UTF-8

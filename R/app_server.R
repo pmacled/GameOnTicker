@@ -35,6 +35,23 @@ app_server <- function(input, output, session) {
     default_teams = reactive(NULL)
   )
 
+  mod_rules_server(
+    "rules_1",
+    rules_content = {
+      rules_file <- system.file(
+        "app/www/markdown/context/co-ed-touch-football-rules-2025-01-30.md",
+        package = "GameOnTicker"
+      )
+
+      if (file.exists(rules_file)) {
+        paste(readLines(rules_file, warn = FALSE), collapse = "\n")
+      } else {
+        "Rules content not available."
+      }
+    },
+    rules_type = "co-ed touch football rules"
+  )
+
   mod_referee_controls_server(
     "referee_controls_sim",
     db_conn,

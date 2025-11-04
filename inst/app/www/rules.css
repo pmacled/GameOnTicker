@@ -1,0 +1,20 @@
+/* Rules Module Styles */
+
+:root {
+  --rules-container-max-width: 1000px;
+  --rules-padding: 20px;
+  --rules-mobile-padding: 15px;
+}
+
+.rules-container {
+  max-width: var(--rules-container-max-width);
+  margin: 0 auto;
+  padding: var(--rules-padding);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .rules-container {
+    padding: var(--rules-mobile-padding);
+  }
+}
