@@ -38,22 +38,43 @@ mod_login_server <- function(id, db_conn, user_rv) {
     # Handle stored user data from localStorage
     observeEvent(input$storedUser, {
       if (!is.null(input$storedUser) && input$storedUser != "") {
+        # Clean up expired cookies during auto-login attempts
+        tryCatch(
+          {
+            cleanup_expired_cookies(db_conn)
+          },
+          error = function(e) {
+            # Continue with login validation even if cleanup fails
+            warning("Cookie cleanup failed during auto-login: ", e$message)
+          }
+        )
+
         tryCatch(
           {
             stored_data <- jsonlite::fromJSON(input$storedUser)
-            if (!is.null(stored_data$user_id)) {
-              # Verify user still exists in database
-              user <- DBI::dbGetQuery(
+
+            # Validate using cookie-based authentication
+            if (
+              !is.null(stored_data$cookie) &&
+                !is.null(stored_data$user_id) &&
+                !is.null(stored_data$username)
+            ) {
+              user <- validate_login_cookie(
                 db_conn,
-                "SELECT * FROM public.user WHERE id = $1",
-                params = list(as.integer(stored_data$user_id))
+                stored_data$user_id,
+                stored_data$username,
+                stored_data$cookie
               )
-              if (nrow(user) == 1) {
+
+              if (!is.null(user)) {
                 user_rv(user)
               } else {
-                # User no longer exists, clear storage
+                # Invalid cookie, clear storage
                 session$sendCustomMessage("clearStoredUser", "")
               }
+            } else {
+              # Invalid or incomplete data format, clear storage
+              session$sendCustomMessage("clearStoredUser", "")
             }
           },
           error = function(e) {
@@ -129,7 +150,44 @@ mod_login_server <- function(id, db_conn, user_rv) {
             "INSERT INTO public.user (username, password_hash) VALUES ($1, $2)",
             params = list(input$auth_username, hash)
           )
-          output$auth_status <- renderText("Account created.")
+
+          # Get the newly created user
+          user <- DBI::dbGetQuery(
+            db_conn,
+            "SELECT * FROM public.user WHERE LOWER(username) = LOWER($1)",
+            params = list(input$auth_username)
+          )
+
+          if (nrow(user) == 1) {
+            user_rv(user)
+
+            # Create login cookie if remember_me is checked
+            if (isTRUE(input$remember_me)) {
+              cookie_token <- create_login_cookie(
+                db_conn,
+                user$id[1],
+                expires_days = 30,
+                ip_address = session$clientData$url_hostname
+              )
+
+              if (!is.null(cookie_token)) {
+                user_data <- list(
+                  user_id = user$id[1],
+                  username = user$username[1],
+                  cookie = cookie_token
+                )
+                json_data <- jsonlite::toJSON(user_data)
+                session$sendCustomMessage("storeUser", json_data)
+              }
+            }
+
+            output$auth_status <- renderText("Account created and logged in.")
+            removeModal()
+          } else {
+            output$auth_status <- renderText(
+              "Account created but login failed."
+            )
+          }
         }
       } else {
         # Login logic
@@ -141,15 +199,27 @@ mod_login_server <- function(id, db_conn, user_rv) {
         )
         if (nrow(user) == 1) {
           user_rv(user)
+
           # Store user info in localStorage for persistent login (only if remember_me is checked)
           if (isTRUE(input$remember_me)) {
-            user_data <- list(
-              user_id = user$id[1],
-              username = user$username[1]
+            cookie_token <- create_login_cookie(
+              db_conn,
+              user$id[1],
+              expires_days = 30,
+              ip_address = session$clientData$url_hostname
             )
-            json_data <- jsonlite::toJSON(user_data)
-            session$sendCustomMessage("storeUser", json_data)
+
+            if (!is.null(cookie_token)) {
+              user_data <- list(
+                user_id = user$id[1],
+                username = user$username[1],
+                cookie = cookie_token
+              )
+              json_data <- jsonlite::toJSON(user_data)
+              session$sendCustomMessage("storeUser", json_data)
+            }
           }
+
           output$auth_status <- renderText("Login successful.")
           removeModal()
         } else {
@@ -163,10 +233,39 @@ mod_login_server <- function(id, db_conn, user_rv) {
     })
 
     observeEvent(input$sign_out, {
+      current_user <- user_rv()
+
+      # Get stored cookie data to invalidate it
+      session$sendCustomMessage("getStoredUser", "")
+
+      # Invalidate cookies based on available data
+      if (!is.null(input$storedUser) && input$storedUser != "") {
+        tryCatch(
+          {
+            stored_data <- jsonlite::fromJSON(input$storedUser)
+            if (!is.null(stored_data$cookie)) {
+              # Invalidate the specific cookie
+              invalidate_login_cookie(db_conn, stored_data$cookie)
+            } else if (!is.null(current_user) && !is.null(current_user$id)) {
+              # Fallback: invalidate all cookies for this user
+              invalidate_user_cookies(db_conn, current_user$id)
+            }
+          },
+          error = function(e) {
+            # If we can't get cookie info, invalidate all user cookies as fallback
+            if (!is.null(current_user) && !is.null(current_user$id)) {
+              invalidate_user_cookies(db_conn, current_user$id)
+            }
+          }
+        )
+      } else if (!is.null(current_user) && !is.null(current_user$id)) {
+        # No stored data, but we have current user - invalidate all their cookies
+        invalidate_user_cookies(db_conn, current_user$id)
+      }
+
+      # Clear user state and localStorage
       user_rv(NULL)
-      # Clear stored user data from localStorage
       session$sendCustomMessage("clearStoredUser", "")
-      # Clear any status messages when signing out
       output$auth_status <- renderText("")
     })
   })

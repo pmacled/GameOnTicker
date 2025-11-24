@@ -413,3 +413,166 @@ create_standings_table <- function(standings, divisions) {
   # Convert to HTML for Shiny
   gt::as_raw_html(gt_table)
 }
+
+#' Generate a secure random cookie token
+#'
+#' @return A 128-character random string
+#'
+#' @noRd
+generate_cookie_token <- function() {
+  # Generate 64 random bytes and convert to hex (128 characters)
+  paste0(sprintf("%02x", as.integer(openssl::rand_bytes(64))), collapse = "")
+}
+
+#' Create a new login cookie for a user
+#'
+#' @param db_conn Database connection
+#' @param user_id User ID
+#' @param expires_days Number of days until expiration (default: 30)
+#' @param ip_address IP address (optional)
+#' @return Cookie token string
+#'
+#' @noRd
+create_login_cookie <- function(
+  db_conn,
+  user_id,
+  expires_days = 30,
+  ip_address = NULL
+) {
+  token <- generate_cookie_token()
+  expires_at <- Sys.time() + (expires_days * 24 * 60 * 60)
+
+  tryCatch(
+    {
+      DBI::dbExecute(
+        db_conn,
+        "INSERT INTO public.user_login_cookies (user_id, cookie_token, expires_at, ip_address) VALUES ($1, $2, $3, $4)",
+        params = list(
+          as.integer(user_id),
+          token,
+          expires_at,
+          ip_address %||% NA_character_
+        )
+      )
+      return(token)
+    },
+    error = function(e) {
+      warning("Failed to create login cookie: ", e$message)
+      return(NULL)
+    }
+  )
+}
+
+#' Validate a login cookie and return user info
+#'
+#' @param db_conn Database connection
+#' @param user_id User ID
+#' @param username Username
+#' @param cookie_token Cookie token
+#' @return User data frame if valid, NULL if invalid
+#'
+#' @noRd
+validate_login_cookie <- function(db_conn, user_id, username, cookie_token) {
+  tryCatch(
+    {
+      # Validate cookie and get user info in one query
+      user <- DBI::dbGetQuery(
+        db_conn,
+        "SELECT u.* FROM public.user u 
+       INNER JOIN public.user_login_cookies c ON u.id = c.user_id 
+       WHERE u.id = $1 AND LOWER(u.username) = LOWER($2) AND c.cookie_token = $3 
+       AND c.expires_at > NOW()",
+        params = list(
+          as.integer(user_id),
+          username,
+          cookie_token
+        )
+      )
+
+      if (nrow(user) == 1) {
+        # Update last_used_at timestamp
+        DBI::dbExecute(
+          db_conn,
+          "UPDATE public.user_login_cookies SET last_used_at = NOW() WHERE cookie_token = $1",
+          params = list(cookie_token)
+        )
+        return(user)
+      }
+      return(NULL)
+    },
+    error = function(e) {
+      warning("Failed to validate login cookie: ", e$message)
+      return(NULL)
+    }
+  )
+}
+
+#' Invalidate a specific login cookie
+#'
+#' @param db_conn Database connection
+#' @param cookie_token Cookie token to invalidate
+#' @return TRUE if successful, FALSE otherwise
+#'
+#' @noRd
+invalidate_login_cookie <- function(db_conn, cookie_token) {
+  tryCatch(
+    {
+      rows_affected <- DBI::dbExecute(
+        db_conn,
+        "DELETE FROM public.user_login_cookies WHERE cookie_token = $1",
+        params = list(cookie_token)
+      )
+      return(rows_affected > 0)
+    },
+    error = function(e) {
+      warning("Failed to invalidate login cookie: ", e$message)
+      return(FALSE)
+    }
+  )
+}
+
+#' Invalidate all login cookies for a user
+#'
+#' @param db_conn Database connection
+#' @param user_id User ID
+#' @return Number of cookies invalidated
+#'
+#' @noRd
+invalidate_user_cookies <- function(db_conn, user_id) {
+  tryCatch(
+    {
+      rows_affected <- DBI::dbExecute(
+        db_conn,
+        "DELETE FROM public.user_login_cookies WHERE user_id = $1",
+        params = list(as.integer(user_id))
+      )
+      return(rows_affected)
+    },
+    error = function(e) {
+      warning("Failed to invalidate user cookies: ", e$message)
+      return(0)
+    }
+  )
+}
+
+#' Clean up expired login cookies
+#'
+#' @param db_conn Database connection
+#' @return Number of expired cookies removed
+#'
+#' @noRd
+cleanup_expired_cookies <- function(db_conn) {
+  tryCatch(
+    {
+      rows_affected <- DBI::dbExecute(
+        db_conn,
+        "DELETE FROM public.user_login_cookies WHERE expires_at <= NOW()"
+      )
+      return(rows_affected)
+    },
+    error = function(e) {
+      warning("Failed to cleanup expired cookies: ", e$message)
+      return(0)
+    }
+  )
+}

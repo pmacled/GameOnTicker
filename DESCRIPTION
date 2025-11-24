@@ -15,6 +15,7 @@ Imports:
     golem,
     gt,
     jsonlite,
+    openssl,
     pkgload,
     RPostgres,
     scales,
