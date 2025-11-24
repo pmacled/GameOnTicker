@@ -65,16 +65,16 @@
         "RemoteRepo": "GameOnTicker",
         "RemoteUsername": "pmacled",
         "RemoteRef": "HEAD",
-        "RemoteSha": "316c36ccd65dd32aa3c8787195e0a9fca2627b3d",
+        "RemoteSha": "c8e87166bb47be5137a32d07ccdc93cf394b590f",
         "GithubRepo": "GameOnTicker",
         "GithubUsername": "pmacled",
         "GithubRef": "HEAD",
-        "GithubSHA1": "316c36ccd65dd32aa3c8787195e0a9fca2627b3d",
+        "GithubSHA1": "c8e87166bb47be5137a32d07ccdc93cf394b590f",
         "NeedsCompilation": "no",
-        "Packaged": "2025-11-24 18:39:22 UTC; nashd",
+        "Packaged": "2025-11-24 18:56:42 UTC; nashd",
         "Author": "Nash Delcamp [aut, cre]",
         "Maintainer": "Nash Delcamp <nash.delcamp@gmail.com>",
-        "Built": "R 4.4.2; ; 2025-11-24 18:39:22 UTC; windows"
+        "Built": "R 4.4.2; ; 2025-11-24 18:56:42 UTC; windows"
       }
     },
     "R6": {
