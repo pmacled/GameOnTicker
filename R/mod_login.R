@@ -163,11 +163,17 @@ mod_login_server <- function(id, db_conn, user_rv) {
 
             # Create login cookie if remember_me is checked
             if (isTRUE(input$remember_me)) {
+              ip_address <- session$request$HTTP_X_FORWARDED_FOR %||%
+                session$request$HTTP_X_REAL_IP %||%
+                session$request$REMOTE_ADDR %||%
+                session$clientData$url_hostname %||%
+                "unknown"
+
               cookie_token <- create_login_cookie(
                 db_conn,
                 user$id[1],
                 expires_days = 30,
-                ip_address = session$clientData$url_hostname
+                ip_address = ip_address
               )
 
               if (!is.null(cookie_token)) {
@@ -202,11 +208,17 @@ mod_login_server <- function(id, db_conn, user_rv) {
 
           # Store user info in localStorage for persistent login (only if remember_me is checked)
           if (isTRUE(input$remember_me)) {
+            ip_address <- session$request$HTTP_X_FORWARDED_FOR %||%
+              session$request$HTTP_X_REAL_IP %||%
+              session$request$REMOTE_ADDR %||%
+              session$clientData$url_hostname %||%
+              "unknown"
+
             cookie_token <- create_login_cookie(
               db_conn,
               user$id[1],
               expires_days = 30,
-              ip_address = session$clientData$url_hostname
+              ip_address = ip_address
             )
 
             if (!is.null(cookie_token)) {
