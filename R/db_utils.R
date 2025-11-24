@@ -429,15 +429,13 @@ generate_cookie_token <- function() {
 #' @param db_conn Database connection
 #' @param user_id User ID
 #' @param expires_days Number of days until expiration (default: 30)
-#' @param ip_address IP address (optional)
 #' @return Cookie token string
 #'
 #' @noRd
 create_login_cookie <- function(
   db_conn,
   user_id,
-  expires_days = 30,
-  ip_address = NULL
+  expires_days = 30
 ) {
   token <- generate_cookie_token()
   expires_at <- Sys.time() + (expires_days * 24 * 60 * 60)
@@ -446,12 +444,11 @@ create_login_cookie <- function(
     {
       DBI::dbExecute(
         db_conn,
-        "INSERT INTO public.user_login_cookies (user_id, cookie_token, expires_at, ip_address) VALUES ($1, $2, $3, $4)",
+        "INSERT INTO public.user_login_cookies (user_id, cookie_token, expires_at) VALUES ($1, $2, $3)",
         params = list(
           as.integer(user_id),
           token,
-          expires_at,
-          ip_address %||% NA_character_
+          expires_at
         )
       )
       return(token)
