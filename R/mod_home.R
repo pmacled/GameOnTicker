@@ -493,7 +493,7 @@ mod_home_server <- function(id, db_conn, user_rv) {
           selectInput(
             ns("team_selection"),
             label = NULL,
-            choices = setNames(teams$id, teams$name),
+            choices = stats::setNames(teams$id, teams$name),
             selected = favorites$id,
             multiple = TRUE,
             width = "100%",

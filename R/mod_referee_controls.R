@@ -849,7 +849,7 @@ mod_referee_controls_server <- function(id, db_conn, game_id, user_rv) {
         shinyWidgets::radioGroupButtons(
           inputId = ns("toss_winner"),
           label = "Who won the toss?",
-          choices = setNames(
+          choices = stats::setNames(
             c("Home", "Away"),
             c(game_info$home_name, game_info$away_name)
           ),
@@ -858,7 +858,7 @@ mod_referee_controls_server <- function(id, db_conn, game_id, user_rv) {
         shinyWidgets::radioGroupButtons(
           inputId = ns("possession_team"),
           label = "Who starts with possession?",
-          choices = setNames(
+          choices = stats::setNames(
             c("Home", "Away"),
             c(game_info$home_name, game_info$away_name)
           ),

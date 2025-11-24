@@ -433,7 +433,7 @@ mod_schedule_server <- function(
             checkboxGroupInput(
               ns("temp_divisions"),
               label = NULL,
-              choices = setNames(
+              choices = stats::setNames(
                 divisions$division_id,
                 divisions$division_name
               ),
@@ -475,7 +475,7 @@ mod_schedule_server <- function(
             checkboxGroupInput(
               ns("temp_teams"),
               label = NULL,
-              choices = setNames(teams$id, teams$name),
+              choices = stats::setNames(teams$id, teams$name),
               selected = temp_filter_state$teams,
               inline = FALSE
             )
@@ -493,7 +493,7 @@ mod_schedule_server <- function(
         return(p("No dates available", class = "text-muted"))
       }
 
-      date_choices <- setNames(
+      date_choices <- stats::setNames(
         as.character(dates$game_date),
         format(dates$game_date, "%B %d, %Y")
       )
