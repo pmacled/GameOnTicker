@@ -216,7 +216,7 @@ mod_referee_controls_server <- function(id, db_conn, game_id, user_rv) {
       if (girl) {
         turnover_lgl <-
           # 5th and 2. regular girl play is a turnover.
-          (down_rv() == 5 & girl_plays_rv() < 2) ||
+          (down_rv() == 5 & girl_plays_rv() < 1) ||
           # 6th down.
           (down_rv() >= 6)
         girl_plays_rv(girl_plays_rv() + 1)
@@ -254,7 +254,7 @@ mod_referee_controls_server <- function(id, db_conn, game_id, user_rv) {
       # 5th and 2. must be a girl touchdown.
       turnover_lgl <- !defense &&
         !girl &&
-        (down_rv() == 5 & girl_plays_rv() < 2)
+        (down_rv() == 5 & girl_plays_rv() < 1)
 
       event <- dplyr::case_when(
         turnover_lgl ~ "guy_play",
@@ -288,7 +288,9 @@ mod_referee_controls_server <- function(id, db_conn, game_id, user_rv) {
         change_possession()
       }
       # update down to NA to indicate a PAT
-      down_rv(NA_real_)
+      if (!turnover_lgl) {
+        down_rv(NA_real_)
+      }
     }
 
     guy_touchdown <- function(record = TRUE) {
