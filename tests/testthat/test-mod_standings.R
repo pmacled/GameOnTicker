@@ -18,6 +18,9 @@ test_that("calculate_standings works with sample data", {
     away_result = c("L", "L", "W"),
     home_team_name = c("Team A", "Team B", "Team C"),
     away_team_name = c("Team B", "Team C", "Team A"),
+    home_team_logo = c("", "", ""),
+    away_team_logo = c("", "", ""),
+    start_time = as.POSIXct(c("2025-01-01 10:00:00", "2025-01-01 11:00:00", "2025-01-01 12:00:00")),
     stringsAsFactors = FALSE
   )
 
@@ -72,6 +75,7 @@ test_that("calculate_head_to_head works", {
     division_id = 1,
     home_result = "W",
     away_result = "L",
+    start_time = as.POSIXct("2025-01-01 10:00:00"),
     stringsAsFactors = FALSE
   )
 
@@ -89,20 +93,32 @@ test_that("standings UI function returns valid HTML", {
 
 test_that("create_standings_table works", {
   standings <- data.frame(
+    team_id = c(1, 2),
     team_name = c("Team A", "Team B"),
+    team_logo = c("", ""),
+    division_id = c(1, 1),
     games_played = c(1, 1),
     wins = c(1, 0),
     losses = c(0, 1),
     ties = c(0, 0),
     win_pct = c(1.0, 0.0),
-    points_scored = c(14, 7),
+    points_for = c(14, 7),
     points_against = c(7, 14),
     point_diff = c(7, -7),
     plus_minus = c(7.0, -7.0),
+    h2h_advantage = c(0.5, -0.5),
+    streak = c("W1", "L1"),
     stringsAsFactors = FALSE
   )
 
-  result <- create_standings_table(standings, "Test Division")
+  divisions <- data.frame(
+    id = 1,
+    name = "Test Division",
+    rank = 1,
+    stringsAsFactors = FALSE
+  )
+
+  result <- create_standings_table(standings, divisions)
 
   expect_type(result, "character")
   expect_true(grepl("table", result, ignore.case = TRUE))
